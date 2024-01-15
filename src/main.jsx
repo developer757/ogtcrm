@@ -1,10 +1,22 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+import { PrimeReactProvider } from "primereact/api";
+import 'primereact/resources/primereact.css';
+import "primereact/resources/themes/lara-dark-green/theme.css";
+import "primeicons/primeicons.css";
+import 'primeflex/primeflex.css';
+
+
+import App from "./App.jsx";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+    <BrowserRouter>
+      <PrimeReactProvider value={{ unstyled: false }}>
+        <App />
+      </PrimeReactProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
