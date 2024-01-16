@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
-import { Domains, Users } from "./_root/pages";
+import { Domains, Funnels, Users } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
 function App() {
@@ -12,6 +12,7 @@ function App() {
           <Route element={<RootLayout />}>
             <Route path="/users" element={<Users />} />
             <Route path="/domains" element={<Domains />} />
+            <Route path="/funnels" element={<Funnels />} />
           </Route>
         </Routes>
     </>
