@@ -14,9 +14,14 @@ function RootLayout() {
 
   useEffect(() => {
     let savedTheme = localStorage.getItem("theme");
-    setTheme(savedTheme || "lara-dark-green");
-    if (themeLink) {
+    if (savedTheme && themeLink) {
+      setTheme(savedTheme);
       themeLink.href = `/themes/${savedTheme}/theme.css`;
+    } else {
+      setTheme("lara-dark-green");
+      if (themeLink) {
+        themeLink.href = `/themes/lara-dark-green/theme.css`;
+      }
     }
   }, []);
 
