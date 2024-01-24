@@ -10,19 +10,72 @@ import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { FilterMatchMode } from "primereact/api";
 
 function Funnels() {
   const [products, setProducts] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
   const [funnelName, setFunnelName] = useState("");
 
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+  });
+  const [loading, setLoading] = useState(true);
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
+
+  // useEffect(() => {
+  //   // axios({
+  //   //   method: "get",
+  //   //   url: "http://25.18.88.64:8000/api/funnels",
+  //   //   mode: "no-cors",
+  //   // }).then(function (response) {
+  //   //   console.log(response.data);
+  //   //   setProducts(response.data);
+  //   // });
+  // }, []);
+
+  useEffect(() => {
+    ProductService.getProducts().then((data) => {
+      setProducts(getProducts(data));
+      setLoading(false);
+    });
+  }, []);
+
+  const getProducts = (data) => {
+    return [...(data || [])].map((d) => {
+      d.date = new Date(d.date);
+
+      return d;
+    });
+  };
+
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+
+    _filters["global"].value = value;
+
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
+
   const toast = useRef(null);
 
-  const accept = () => {
+  const acceptDeleteFunnel = () => {
     toast.current.show({
       severity: "success",
       // summary: "Confirmed",
       detail: "Воронка удалена",
+      life: 3000,
+    });
+  };
+
+  const acceptAddFunnel = () => {
+    toast.current.show({
+      severity: "success",
+      // summary: "Confirmed",
+      detail: "Воронка создана",
       life: 3000,
     });
   };
@@ -36,42 +89,51 @@ function Funnels() {
     // });
   };
 
-  const confirm = (event) => {
+  const confirmDeleteFunnel = (event) => {
     confirmPopup({
       group: "headless",
       target: event.currentTarget,
       message: "Вы точно хотите удалить воронку?",
       icon: "pi pi-exclamation-triangle",
       defaultFocus: "accept",
-      accept,
+      acceptDeleteFunnel,
       reject,
     });
   };
 
-  useEffect(() => {
-    // ProductService.getProducts().then((data) => setProducts(data));
+  const confirmAddFunnel = (event) => {
+    acceptAddFunnel();
+    event.hide()
+  };
 
-    axios({
-      method: "get",
-      url: "http://25.18.88.64:8000/api/funnels",
-      mode: "no-cors",
-    }).then(function (response) {
-      console.log(response.data);
-      setProducts(response.data);
-    });
-  }, []);
+  const renderHeader = () => {
+    return (
+      <div className="flex justify-content-end">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Keyword Search"
+          />
+        </span>
+      </div>
+    );
+  };
+
+  const header = renderHeader();
 
   const actionBodyTemplate = () => {
     return (
       <Button
-        onClick={confirm}
+        onClick={confirmDeleteFunnel}
         icon="pi pi-trash"
         className="p-button-danger"
         style={{ maxWidth: "48px", margin: "0 auto" }}
       />
     );
   };
-  
+
   return (
     <div className="" style={{ maxWidth: "80%", margin: "0 auto" }}>
       <Toast ref={toast} />
@@ -85,7 +147,7 @@ function Funnels() {
                 ref={acceptBtnRef}
                 label="Да"
                 onClick={() => {
-                  accept();
+                  acceptDeleteFunnel();
                   hide();
                 }}
                 className="p-button-sm p-button-outlined p-button-danger"
@@ -138,24 +200,35 @@ function Funnels() {
                 value={funnelName}
                 onChange={(e) => setFunnelName(e.target.value)}
               />
-              <Button label="Создать" onClick={(e) => hide(e)} />
+              <Button label="Создать" onClick={(e) => confirmAddFunnel(e)} />
             </div>
           )}
         ></Dialog>
       </div>
 
       <DataTable
+        value={products}
         paginator
         rows={20}
         rowsPerPageOptions={[20, 50, 100]}
-        value={products}
         stripedRows
         showGridlines
         tableStyle={{ minWidth: "50rem" }}
         paginatorPosition="both"
+        dataKey="id"
+        filters={filters}
+        loading={loading}
+        globalFilterFields={[
+          "name",
+          "country.name",
+          "representative.name",
+          "status",
+        ]}
+        header={header}
+        emptyMessage="No customers found."
       >
         <Column field="id" header="ID" sortable></Column>
-        <Column field="funnel_name" header="Funnel"></Column>
+        <Column field="name" header="Funnel"></Column>
         <Column
           field="category"
           header="Действие"
