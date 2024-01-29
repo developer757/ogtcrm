@@ -52,7 +52,7 @@ function Users() {
           icon="pi pi-trash"
           severity="danger"
           aria-label="Cancel"
-          onClick={confirm2}
+          onClick={revealPopUp}
         />
       </div>
     );
@@ -84,7 +84,7 @@ function Users() {
   };
   const header = renderHeader();
 
-  const accept = () => {
+  const acceptToast = () => {
     toast.current.show({
       severity: "info",
       summary: "Confirmed",
@@ -93,24 +93,24 @@ function Users() {
     });
   };
 
-  const reject = () => {
+  const rejectToast = () => {
     toast.current.show({
-      severity: "warn",
+      severity: "success",
       summary: "Rejected",
       detail: "Удаление пользователя отклонено",
       life: 3000,
     });
   };
 
-  const confirm2 = (event) => {
+  const revealPopUp = (event) => {
     confirmPopup({
       target: event.currentTarget,
       message: "Вы точно хотите удалить пользователя?",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
-      accept,
-      reject,
+      accept: acceptToast,
+      reject: rejectToast,
     });
   };
 
