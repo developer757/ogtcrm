@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-
 import axios from "axios";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { ProductService } from "../../dummyData/ProductService";
 import { Button } from "primereact/button";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
@@ -13,9 +11,12 @@ import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 
 function Funnels() {
-  const [products, setProducts] = useState([]);
+  const [funnels, setFunnels] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
   const [funnelName, setFunnelName] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [currentRowData, setCurrentRowData] = useState(null);
+
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -24,31 +25,17 @@ function Funnels() {
   const [loading, setLoading] = useState(true);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
 
-  // useEffect(() => {
-  //   // axios({
-  //   //   method: "get",
-  //   //   url: "http://25.18.88.64:8000/api/funnels",
-  //   //   mode: "no-cors",
-  //   // }).then(function (response) {
-  //   //   console.log(response.data);
-  //   //   setProducts(response.data);
-  //   // });
-  // }, []);
-
   useEffect(() => {
-    ProductService.getProducts().then((data) => {
-      setProducts(getProducts(data));
+    axios({
+      method: "get",
+      url: "http://25.18.88.64:8000/api/funnels",
+      mode: "no-cors",
+    }).then(function (response) {
+      console.log(response.data);
+      setFunnels(response.data);
       setLoading(false);
     });
   }, []);
-
-  const getProducts = (data) => {
-    return [...(data || [])].map((d) => {
-      d.date = new Date(d.date);
-
-      return d;
-    });
-  };
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -62,48 +49,66 @@ function Funnels() {
 
   const toast = useRef(null);
 
-  const acceptDeleteFunnel = () => {
+  const showToast = (severity, callback) => {
     toast.current.show({
-      severity: "success",
-      // summary: "Confirmed",
-      detail: "Воронка удалена",
+      severity: severity,
+      detail: toastMessage,
       life: 3000,
+      onComplete: callback,
     });
   };
 
-  const acceptAddFunnel = () => {
-    toast.current.show({
-      severity: "success",
-      // summary: "Confirmed",
-      detail: "Воронка создана",
-      life: 3000,
-    });
+  const accept = () => {
+    deleteFunnel();
   };
 
   const reject = () => {
-    // toast.current.show({
-    //   severity: "warn",
-    //   summary: "Rejected",
-    //   detail: "You have rejected",
-    //   life: 3000,
-    // });
+    setToastMessage('Удаление воронки отменено');
   };
 
-  const confirmDeleteFunnel = (event) => {
+  const confirmDeleteFunnel = (event, rowData) => {
+    setCurrentRowData(rowData);
     confirmPopup({
       group: "headless",
       target: event.currentTarget,
       message: "Вы точно хотите удалить воронку?",
       icon: "pi pi-exclamation-triangle",
       defaultFocus: "accept",
-      acceptDeleteFunnel,
+      accept: deleteFunnel,
       reject,
     });
   };
 
-  const confirmAddFunnel = (event) => {
-    acceptAddFunnel();
-    event.hide()
+  const deleteFunnel = () => {
+    if (currentRowData) {
+      axios
+        .delete(`http://25.18.88.64:8000/api/funnels/${currentRowData.id}`)
+        .then(function (response) {
+          setToastMessage(response.data.message);
+          console.log(response);
+          axios
+            .get("http://25.18.88.64:8000/api/funnels")
+            .then(function (response) {
+              setFunnels(response.data);
+              setLoading(false);
+            })
+            .catch(function (error) {
+              console.log(error);
+              setToastMessage(
+                "Ошибка при загрузке воронок"
+              );
+            });
+        })
+        .catch(function (error) {
+          console.log(error);
+          setToastMessage("Ошибка удаления воронки");
+        });
+    }
+  };
+
+  const confirmAddFunnel = () => {
+    addFunnel();
+    setPopupCreateVisible(false);
   };
 
   const renderHeader = () => {
@@ -123,16 +128,47 @@ function Funnels() {
 
   const header = renderHeader();
 
-  const actionBodyTemplate = () => {
+  const actionBodyTemplate = (rowData) => {
     return (
       <Button
-        onClick={confirmDeleteFunnel}
+        onClick={(e) => confirmDeleteFunnel(e, rowData)}
         icon="pi pi-trash"
         className="p-button-danger"
         style={{ maxWidth: "48px", margin: "0 auto" }}
       />
     );
   };
+
+  const addFunnel = () => {
+    axios
+      .post("http://25.18.88.64:8000/api/funnels/store", {
+        funnel_name: funnelName,
+      })
+      .then(function (response) {
+        setToastMessage(response.data.message);
+        console.log(response);
+        axios
+          .get("http://25.18.88.64:8000/api/funnels")
+          .then(function (response) {
+            setFunnels(response.data);
+            setLoading(false);
+          })
+          .catch(function (error) {
+            console.log(error);
+            setToastMessage("Error occurred while fetching updated list");
+          });
+      })
+      .catch(function (error) {
+        console.log(error);
+        setToastMessage("Error occurred");
+      });
+  };
+
+  useEffect(() => {
+    if (toastMessage) {
+      showToast("success");
+    }
+  }, [toastMessage]);
 
   return (
     <div className="" style={{ maxWidth: "80%", margin: "0 auto" }}>
@@ -147,7 +183,7 @@ function Funnels() {
                 ref={acceptBtnRef}
                 label="Да"
                 onClick={() => {
-                  acceptDeleteFunnel();
+                  accept();
                   hide();
                 }}
                 className="p-button-sm p-button-outlined p-button-danger"
@@ -200,42 +236,49 @@ function Funnels() {
                 value={funnelName}
                 onChange={(e) => setFunnelName(e.target.value)}
               />
-              <Button label="Создать" onClick={(e) => confirmAddFunnel(e)} />
+              <Button label="Создать" onClick={confirmAddFunnel} />
             </div>
           )}
         ></Dialog>
       </div>
 
-      <DataTable
-        value={products}
-        paginator
-        rows={20}
-        rowsPerPageOptions={[20, 50, 100]}
-        stripedRows
-        showGridlines
-        tableStyle={{ minWidth: "50rem" }}
-        paginatorPosition="both"
-        dataKey="id"
-        filters={filters}
-        loading={loading}
-        globalFilterFields={[
-          "name",
-          "country.name",
-          "representative.name",
-          "status",
-        ]}
-        header={header}
-        emptyMessage="No customers found."
-      >
-        <Column field="id" header="ID" sortable></Column>
-        <Column field="name" header="Funnel"></Column>
-        <Column
-          field="category"
-          header="Действие"
-          body={actionBodyTemplate}
-          style={{ width: "1%" }}
-        ></Column>
-      </DataTable>
+      <div style={{ maxWidth: "60rem", margin: "0 auto" }}>
+        <DataTable
+          value={funnels}
+          paginator
+          rows={20}
+          rowsPerPageOptions={[20, 50, 100]}
+          stripedRows
+          showGridlines
+          tableStyle={{ minWidth: "50rem" }}
+          paginatorPosition="both"
+          dataKey="id"
+          filters={filters}
+          loading={loading}
+          globalFilterFields={[
+            "funnel_name",
+            "country.name",
+            "representative.name",
+            "status",
+          ]}
+          header={header}
+          emptyMessage="Воронка не найдена."
+        >
+          <Column
+            field="id"
+            header="ID"
+            sortable
+            style={{ width: "30%" }}
+          ></Column>
+          <Column field="funnel_name" header="Воронка"></Column>
+          <Column
+            field="category"
+            header="Действие"
+            body={actionBodyTemplate}
+            style={{ width: "30%" }}
+          ></Column>
+        </DataTable>
+      </div>
     </div>
   );
 }
