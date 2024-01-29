@@ -8,12 +8,16 @@ import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
 
 import App from "./App.jsx";
+const value = {
+  ripple: true,
+  unstyled: false,
+};
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <PrimeReactProvider value={{ unstyled: false }}>
-          <App />
+      <PrimeReactProvider value={value}>
+        <App />
       </PrimeReactProvider>
     </BrowserRouter>
   </React.StrictMode>

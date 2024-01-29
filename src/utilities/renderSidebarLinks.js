@@ -15,7 +15,7 @@ export const sidebarLinks = [
         name: 'Лиды'
     },
     {
-        to: '/doubles',
+        to: '/duplicates',
         icon: 'pi-home',
         name: 'Дубли'
     },
@@ -55,7 +55,7 @@ export const sidebarLinks = [
         name: 'Настройки'
     },
     {
-        to: '/sing-in',
+        to: '/sign-in',
         icon: 'pi-sign-out',
         name: 'Выход'
     },
