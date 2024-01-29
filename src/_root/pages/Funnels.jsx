@@ -27,6 +27,16 @@ function Funnels() {
   const toast = useRef(null);
 
   useEffect(() => {
+    renderFunnels();
+  }, []);
+
+  useEffect(() => {
+    if (toastMessage) {
+      showToast("success");
+    }
+  }, [toastMessage]);
+
+  const renderFunnels = () => {
     getFunnels()
       .then((response) => {
         setFunnels(response.data);
@@ -36,7 +46,7 @@ function Funnels() {
         console.log(error);
         setToastMessage("Ошибка при загрузке воронок");
       });
-  }, []);
+  };
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -56,14 +66,6 @@ function Funnels() {
     });
   };
 
-  const acceptDeletion = () => {
-    deleteSelectedFunnel();
-  };
-
-  const rejectDeletion = () => {
-    setToastMessage("Удаление воронки отменено");
-  };
-
   const confirmDeleteFunnel = (event, rowData) => {
     setCurrentRowData(rowData);
     confirmPopup({
@@ -72,9 +74,13 @@ function Funnels() {
       message: "Вы точно хотите удалить воронку?",
       icon: "pi pi-exclamation-triangle",
       defaultFocus: "accept",
-      acceptDeletion: deleteFunnel,
+      accept: deleteSelectedFunnel,
       rejectDeletion,
     });
+  };
+
+  const rejectDeletion = () => {
+    setToastMessage("Удаление воронки отменено");
   };
 
   const deleteSelectedFunnel = () => {
@@ -82,15 +88,7 @@ function Funnels() {
       deleteFunnel(currentRowData.id)
         .then(function (response) {
           setToastMessage(response.data.message);
-          getFunnels()
-            .then((response) => {
-              setFunnels(response.data);
-              setLoading(false);
-            })
-            .catch((error) => {
-              console.log(error);
-              setToastMessage("Ошибка при загрузке воронок");
-            });
+          renderFunnels();
         })
         .catch(function (error) {
           console.log(error);
@@ -99,37 +97,19 @@ function Funnels() {
     }
   };
 
-  const confirmAddFunnel = () => {
-    addNewFunnel();
-    setPopupCreateVisible(false);
-  };
-
   const addNewFunnel = () => {
     addFunnel(funnelName)
       .then(function (response) {
         setToastMessage(response.data.message);
+        setPopupCreateVisible(false);
         setFunnelName("");
-        getFunnels()
-          .then((response) => {
-            setFunnels(response.data);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.log(error);
-            setToastMessage("Ошибка при загрузке воронок");
-          });
+        renderFunnels();
       })
       .catch(function (error) {
         setToastMessage("Ошибка при добавлении воронки");
         setFunnelName("");
       });
   };
-
-  useEffect(() => {
-    if (toastMessage) {
-      showToast("success");
-    }
-  }, [toastMessage]);
 
   const renderHeader = () => {
     return (
@@ -170,7 +150,7 @@ function Funnels() {
                 ref={acceptBtnRef}
                 label="Да"
                 onClick={() => {
-                  acceptDeletion();
+                  deleteSelectedFunnel();
                   hide();
                 }}
                 className="p-button-sm p-button-outlined p-button-danger"
@@ -223,7 +203,7 @@ function Funnels() {
                 value={funnelName}
                 onChange={(e) => setFunnelName(e.target.value)}
               />
-              <Button label="Создать" onClick={confirmAddFunnel} />
+              <Button label="Создать" onClick={addNewFunnel} />
             </div>
           )}
         ></Dialog>
