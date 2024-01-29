@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -10,14 +9,14 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 
+import { getFunnels, deleteFunnel, addFunnel } from "../../utilities/api";
+
 function Funnels() {
   const [funnels, setFunnels] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
   const [funnelName, setFunnelName] = useState("");
   const [toastMessage, setToastMessage] = useState("");
   const [currentRowData, setCurrentRowData] = useState(null);
-
-
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
@@ -25,16 +24,18 @@ function Funnels() {
   const [loading, setLoading] = useState(true);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
 
+  const toast = useRef(null);
+
   useEffect(() => {
-    axios({
-      method: "get",
-      url: "http://25.18.88.64:8000/api/funnels",
-      mode: "no-cors",
-    }).then(function (response) {
-      console.log(response.data);
-      setFunnels(response.data);
-      setLoading(false);
-    });
+    getFunnels()
+      .then((response) => {
+        setFunnels(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setToastMessage("Ошибка при загрузке воронок");
+      });
   }, []);
 
   const onGlobalFilterChange = (e) => {
@@ -47,23 +48,20 @@ function Funnels() {
     setGlobalFilterValue(value);
   };
 
-  const toast = useRef(null);
-
-  const showToast = (severity, callback) => {
+  const showToast = (severity) => {
     toast.current.show({
       severity: severity,
       detail: toastMessage,
       life: 3000,
-      onComplete: callback,
     });
   };
 
-  const accept = () => {
-    deleteFunnel();
+  const acceptDeletion = () => {
+    deleteSelectedFunnel();
   };
 
-  const reject = () => {
-    setToastMessage('Удаление воронки отменено');
+  const rejectDeletion = () => {
+    setToastMessage("Удаление воронки отменено");
   };
 
   const confirmDeleteFunnel = (event, rowData) => {
@@ -74,29 +72,24 @@ function Funnels() {
       message: "Вы точно хотите удалить воронку?",
       icon: "pi pi-exclamation-triangle",
       defaultFocus: "accept",
-      accept: deleteFunnel,
-      reject,
+      acceptDeletion: deleteFunnel,
+      rejectDeletion,
     });
   };
 
-  const deleteFunnel = () => {
+  const deleteSelectedFunnel = () => {
     if (currentRowData) {
-      axios
-        .delete(`http://25.18.88.64:8000/api/funnels/${currentRowData.id}`)
+      deleteFunnel(currentRowData.id)
         .then(function (response) {
           setToastMessage(response.data.message);
-          console.log(response);
-          axios
-            .get("http://25.18.88.64:8000/api/funnels")
-            .then(function (response) {
+          getFunnels()
+            .then((response) => {
               setFunnels(response.data);
               setLoading(false);
             })
-            .catch(function (error) {
+            .catch((error) => {
               console.log(error);
-              setToastMessage(
-                "Ошибка при загрузке воронок"
-              );
+              setToastMessage("Ошибка при загрузке воронок");
             });
         })
         .catch(function (error) {
@@ -107,9 +100,36 @@ function Funnels() {
   };
 
   const confirmAddFunnel = () => {
-    addFunnel();
+    addNewFunnel();
     setPopupCreateVisible(false);
   };
+
+  const addNewFunnel = () => {
+    addFunnel(funnelName)
+      .then(function (response) {
+        setToastMessage(response.data.message);
+        setFunnelName("");
+        getFunnels()
+          .then((response) => {
+            setFunnels(response.data);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.log(error);
+            setToastMessage("Ошибка при загрузке воронок");
+          });
+      })
+      .catch(function (error) {
+        setToastMessage("Ошибка при добавлении воронки");
+        setFunnelName("");
+      });
+  };
+
+  useEffect(() => {
+    if (toastMessage) {
+      showToast("success");
+    }
+  }, [toastMessage]);
 
   const renderHeader = () => {
     return (
@@ -126,8 +146,6 @@ function Funnels() {
     );
   };
 
-  const header = renderHeader();
-
   const actionBodyTemplate = (rowData) => {
     return (
       <Button
@@ -138,37 +156,6 @@ function Funnels() {
       />
     );
   };
-
-  const addFunnel = () => {
-    axios
-      .post("http://25.18.88.64:8000/api/funnels/store", {
-        funnel_name: funnelName,
-      })
-      .then(function (response) {
-        setToastMessage(response.data.message);
-        console.log(response);
-        axios
-          .get("http://25.18.88.64:8000/api/funnels")
-          .then(function (response) {
-            setFunnels(response.data);
-            setLoading(false);
-          })
-          .catch(function (error) {
-            console.log(error);
-            setToastMessage("Error occurred while fetching updated list");
-          });
-      })
-      .catch(function (error) {
-        console.log(error);
-        setToastMessage("Error occurred");
-      });
-  };
-
-  useEffect(() => {
-    if (toastMessage) {
-      showToast("success");
-    }
-  }, [toastMessage]);
 
   return (
     <div className="" style={{ maxWidth: "80%", margin: "0 auto" }}>
@@ -183,7 +170,7 @@ function Funnels() {
                 ref={acceptBtnRef}
                 label="Да"
                 onClick={() => {
-                  accept();
+                  acceptDeletion();
                   hide();
                 }}
                 className="p-button-sm p-button-outlined p-button-danger"
@@ -193,7 +180,7 @@ function Funnels() {
                 label="Отменить"
                 outlined
                 onClick={() => {
-                  reject();
+                  rejectDeletion();
                   hide();
                 }}
                 className="p-button-sm p-button-text"
@@ -261,7 +248,7 @@ function Funnels() {
             "representative.name",
             "status",
           ]}
-          header={header}
+          header={renderHeader()}
           emptyMessage="Воронка не найдена."
         >
           <Column
