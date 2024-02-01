@@ -21,3 +21,6 @@ export const addUser = (dialogInputObject) =>
     password: dialogInputObject.password,
     role: dialogInputObject.role,
   });
+
+export const deleteUser = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/users/${id}`);
