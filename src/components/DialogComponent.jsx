@@ -1,28 +1,23 @@
 import { useState, useEffect, useRef } from "react";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { FilterMatchMode } from "primereact/api";
 import { Dropdown } from "primereact/dropdown";
-import { Toast } from "primereact/toast";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { getUsers, addUser } from "../utilities/api";
 
 export const DialogComponent = ({
+  type,
   isAddDialogVisible,
   setIsAddDialogVisible,
   isEditDialogVisible,
   setIsEditDialogVisible,
   header,
+  inputs,
+  dialogInputObject,
+  setDialogInputObject,
+  handleAdd,
+  handleEdit
 }) => {
   const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
-  const [dialogInputObject, setDialogInputObject] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "",
-  });
 
   useEffect(() => {
     console.log(dialogInputObject);
@@ -33,21 +28,6 @@ export const DialogComponent = ({
       ...prevState,
       [field]: value,
     }));
-  };
-
-  const handleAddUser = ({ name, email, password, role }) => {
-    if (name !== "" && email !== "" && password !== "" && role !== "") {
-      addUser(dialogInputObject)
-        .then(function (response) {
-          setIsAddDialogVisible(false);
-          renderUsers();
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    } else {
-      console.log("Fill all fields");
-    }
   };
 
   return (
@@ -62,51 +42,42 @@ export const DialogComponent = ({
       style={{ width: "100%", maxWidth: "400px" }}
     >
       <div className="flex flex-column gap-4 mt-2">
-        <div className="flex flex-column gap-2">
-          <h4 className="m-0">Имя</h4>
-          <InputText
-            value={dialogInputObject.name}
-            onChange={(e) => handleDialogInputChange("name", e.target.value)}
-            style={{ width: "100%" }}
-            placeholder="Введите имя"
-          />
-        </div>
-        <div className="flex flex-column gap-2">
-          <h4 className="m-0">Почта</h4>
-          <InputText
-            value={dialogInputObject.email}
-            onChange={(e) => handleDialogInputChange("email", e.target.value)}
-            style={{ width: "100%" }}
-            placeholder="Введите почту"
-          />
-        </div>
-        <div className="flex flex-column gap-2">
-          <h4 className="m-0">Пароль</h4>
-          <InputText
-            value={dialogInputObject.password}
-            onChange={(e) =>
-              handleDialogInputChange("password", e.target.value)
-            }
-            style={{ width: "100%" }}
-            placeholder="Введите пароль"
-          />
-        </div>
-        <div className="flex flex-column gap-2">
-          <h4 className="m-0">Роль</h4>
-          <Dropdown
-            value={dialogInputObject.role}
-            onChange={(e) => handleDialogInputChange("role", e.target.value)}
-            options={dialogRoles}
-            optionLabel="name"
-            optionValue="name"
-            placeholder="Выберите роль"
-            className="w-full"
-          />
-        </div>
+        {inputs.map((input, index) => {
+          return (
+            <div className="flex flex-column gap-2" key={index}>
+              <h4 className="m-0">{input.label}</h4>
+              {input.type === "text" ? (
+                <InputText
+                  value={dialogInputObject[index]}
+                  onChange={(e) =>
+                    handleDialogInputChange(input.key, e.target.value)
+                  }
+                  style={{ width: "100%" }}
+                  placeholder={input.placeholder}
+                />
+              ) : input.type === "dropdown" ? (
+                <Dropdown
+                  value={dialogInputObject.role}
+                  onChange={(e) =>
+                    handleDialogInputChange("role", e.target.value)
+                  }
+                  options={dialogRoles}
+                  optionLabel="name"
+                  optionValue="name"
+                  placeholder="Выберите роль"
+                  className="w-full"
+                />
+              ) : (
+                // Код, который будет отображаться для других типов input
+                <span>Другой тип input</span>
+              )}
+            </div>
+          );
+        })}
         <div className="flex">
           <Button
             label={isAddDialogVisible ? "Добавить" : "Редактировать"}
-            onClick={() => handleAddUser(dialogInputObject)}
+            onClick={() => handleAdd(dialogInputObject)}
             className="w-full"
           />
         </div>

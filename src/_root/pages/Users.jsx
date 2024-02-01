@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { getUsers, deleteUser } from "../../utilities/api";
+import { getUsers, deleteUser, addUser } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
@@ -19,8 +19,48 @@ function Users() {
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
+  const [dialogInputObject, setDialogInputObject] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "",
+  });
+
+  const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
+
   const toast = useRef(null);
 
+  const inputs = [
+    {
+      label: "Имя",
+      key: "name",
+      type: "text",
+      placeholder: "Введите имя",
+      options: [],
+    },
+    {
+      label: "Почта",
+      key: "email",
+      type: "text",
+      placeholder: "Введите почту",
+      options: [],
+    },
+    {
+      label: "Пароль",
+      key: "password",
+      type: "text",
+      placeholder: "Введите пароль",
+      options: [],
+    },
+    {
+      label: "Роль",
+      key: "role",
+      type: "dropdown",
+      placeholder: "Выберите роль",
+      options: dialogRoles,
+    },
+  ];
+  
   useEffect(() => {
     renderUsers();
   }, []);
@@ -109,11 +149,26 @@ function Users() {
     });
   };
 
+  const handleAddUser = ({ name, email, password, role }) => {
+    if (name !== "" && email !== "" && password !== "" && role !== "") {
+      addUser(dialogInputObject)
+        .then(function (response) {
+          setIsAddDialogVisible(false);
+          renderUsers();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      console.log("Fill all fields");
+    }
+  };
+
   const handleDeleteUser = () => {
     console.log(selectedUserID);
     deleteUser(selectedUserID)
       .then(function (response) {
-        showAcceptToast()
+        showAcceptToast();
         renderUsers();
       })
       .catch(function (error) {
@@ -168,15 +223,27 @@ function Users() {
     <>
       <Toast ref={toast} />
       <ConfirmPopup group="headless" content={popUpContent} />
+
       <DialogComponent
+        type="add"
         isAddDialogVisible={isAddDialogVisible}
         setIsAddDialogVisible={setIsAddDialogVisible}
         header={"Добавить пользователя"}
+        dialogInputObject={dialogInputObject}
+        setDialogInputObject={setDialogInputObject}
+        inputs={inputs}
+        handleAdd={handleAddUser}
       />
+
       <DialogComponent
+        type="edit"
         isEditDialogVisible={isEditDialogVisible}
         setIsEditDialogVisible={setIsEditDialogVisible}
         header={"Редактировать пользователя"}
+        dialogInputObject={dialogInputObject}
+        setDialogInputObject={setDialogInputObject}
+        inputs={inputs}
+        // handleEdit={}
       />
 
       <div className="flex flex-column align-items-center justify-content-center">

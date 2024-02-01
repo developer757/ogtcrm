@@ -10,11 +10,12 @@ import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 
 import { getFunnels, deleteFunnel, addFunnel } from "../../utilities/api";
+import { DialogComponent } from "../../components/DialogComponent";
 
 function Funnels() {
   const [funnels, setFunnels] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
-  const [funnelName, setFunnelName] = useState("");
+  const [funnelName, setFunnelName] = useState({ name: "" });
   const [toastMessage, setToastMessage] = useState("");
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
@@ -23,6 +24,16 @@ function Funnels() {
   });
   const [loading, setLoading] = useState(true);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
+
+  const inputs = [
+    {
+      label: "Воронка",
+      key: "name",
+      type: "text",
+      placeholder: "название воронки",
+      options: [],
+    },
+  ];
 
   const toast = useRef(null);
 
@@ -98,16 +109,16 @@ function Funnels() {
   };
 
   const addNewFunnel = () => {
-    addFunnel(funnelName)
+    addFunnel(funnelName.name)
       .then(function (response) {
         setToastMessage(response.data.message);
         setPopupCreateVisible(false);
-        setFunnelName("");
+        setFunnelName({ name: "" });
         renderFunnels();
       })
       .catch(function (error) {
         setToastMessage("Ошибка при добавлении воронки");
-        setFunnelName("");
+        setFunnelName({ name: "" });
       });
   };
 
@@ -176,37 +187,17 @@ function Funnels() {
           icon="pi pi-plus"
           onClick={setPopupCreateVisible}
         />
-        <Dialog
-          visible={popupCreateVisible}
-          modal
-          onHide={() => setPopupCreateVisible(false)}
-          content={({ closeIconRef, hide }) => (
-            <div
-              className="flex flex-column gap-5 p-3"
-              style={{
-                background: "#1f2937",
-              }}
-            >
-              <div className="flex justify-content-between items-center">
-                <h3 className="m-0">Создать воронку</h3>
-                <Button
-                  type="button"
-                  ref={closeIconRef}
-                  onClick={(e) => hide(e)}
-                  icon="pi pi-times"
-                  rounded
-                  outlined
-                  className="h-2rem w-2rem"
-                ></Button>
-              </div>
-              <InputText
-                value={funnelName}
-                onChange={(e) => setFunnelName(e.target.value)}
-              />
-              <Button label="Создать" onClick={addNewFunnel} />
-            </div>
-          )}
-        ></Dialog>
+
+        <DialogComponent
+          type="add"
+          isAddDialogVisible={popupCreateVisible}
+          setIsAddDialogVisible={setPopupCreateVisible}
+          header={"Добавить воронку"}
+          dialogInputObject={funnelName}
+          setDialogInputObject={setFunnelName}
+          inputs={inputs}
+          handleAdd={addNewFunnel}
+        />
       </div>
 
       <div style={{ maxWidth: "60rem", margin: "0 auto" }}>
