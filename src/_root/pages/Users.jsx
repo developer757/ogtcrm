@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { getUsers, deleteUser, addUser } from "../../utilities/api";
+import { getUsers, deleteUser, addUser, editUser } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
@@ -30,27 +30,24 @@ function Users() {
 
   const toast = useRef(null);
 
-  const inputs = [
+  const addDialogInputs = [
     {
       label: "Имя",
       key: "name",
       type: "text",
       placeholder: "Введите имя",
-      options: [],
     },
     {
       label: "Почта",
       key: "email",
       type: "text",
       placeholder: "Введите почту",
-      options: [],
     },
     {
       label: "Пароль",
       key: "password",
       type: "text",
       placeholder: "Введите пароль",
-      options: [],
     },
     {
       label: "Роль",
@@ -60,7 +57,29 @@ function Users() {
       options: dialogRoles,
     },
   ];
-  
+
+  const editDialogInputs = [
+    {
+      label: "Имя",
+      key: "name",
+      type: "text",
+      placeholder: "Введите имя",
+    },
+    {
+      label: "Почта",
+      key: "email",
+      type: "text",
+      placeholder: "Введите почту",
+    },
+    {
+      label: "Роль",
+      key: "role",
+      type: "dropdown",
+      placeholder: "Выберите роль",
+      options: dialogRoles,
+    },
+  ];
+
   useEffect(() => {
     renderUsers();
   }, []);
@@ -71,10 +90,24 @@ function Users() {
     });
   };
 
-  const handleTogglePopUp = (e, id) => {
-    setSelectedUserID(id);
-    showPopUp(e);
+  const handleTogglePopUp = (option, e, users) => {
+    if (option === "add") {
+      showPopUp(e);
+    } else {
+      console.log(users);
+      setDialogInputObject({
+        name: users.name,
+        email: users.email,
+        role: users.role,
+      });
+      setIsEditDialogVisible(true);
+    }
+    setSelectedUserID(users.id);
   };
+
+  useEffect(() => {
+    console.log(selectedUserID)
+  }, [selectedUserID])
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     if (option === "accept") {
@@ -86,20 +119,20 @@ function Users() {
     setSelectedUserID(null);
   };
 
-  const actionButtonsTemplate = (id) => {
+  const actionButtonsTemplate = (users) => {
     return (
       <div className="flex gap-3">
         <Button
           icon="pi pi-pencil"
           severity="success"
           aria-label="Search"
-          onClick={() => setIsEditDialogVisible(true)}
+          onClick={(e) => handleTogglePopUp("edit", e, users)}
         />
         <Button
           icon="pi pi-trash"
           severity="danger"
           aria-label="Cancel"
-          onClick={(e) => handleTogglePopUp(e, id)}
+          onClick={(e) => handleTogglePopUp("add", e, users)}
         />
       </div>
     );
@@ -164,9 +197,24 @@ function Users() {
     }
   };
 
+  const handleEditUser = ({ name, email, role }) => {
+    if (name !== "" && email !== "" && role !== "") {
+      editUser(dialogInputObject, selectedUserID)
+        .then(function (response) {
+          setIsEditDialogVisible(false);
+          renderUsers();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      console.log("Fill all fields");
+    }
+  };
+
   const handleDeleteUser = () => {
-    console.log(selectedUserID);
-    deleteUser(selectedUserID)
+    console.log(dialogInputObject, selectedUserID);
+    deleteUser(dialogInputObject, selectedUserID)
       .then(function (response) {
         showAcceptToast();
         renderUsers();
@@ -226,24 +274,24 @@ function Users() {
 
       <DialogComponent
         type="add"
-        isAddDialogVisible={isAddDialogVisible}
-        setIsAddDialogVisible={setIsAddDialogVisible}
+        isDialogVisible={isAddDialogVisible}
+        setIsDialogVisible={setIsAddDialogVisible}
         header={"Добавить пользователя"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
-        inputs={inputs}
+        inputs={addDialogInputs}
         handleAdd={handleAddUser}
       />
 
       <DialogComponent
         type="edit"
-        isEditDialogVisible={isEditDialogVisible}
-        setIsEditDialogVisible={setIsEditDialogVisible}
+        isDialogVisible={isEditDialogVisible}
+        setIsDialogVisible={setIsEditDialogVisible}
         header={"Редактировать пользователя"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
-        inputs={inputs}
-        // handleEdit={}
+        inputs={editDialogInputs}
+        handleEdit={handleEditUser}
       />
 
       <div className="flex flex-column align-items-center justify-content-center">
@@ -276,7 +324,7 @@ function Users() {
           <Column field="role" header="Роль"></Column>
           <Column
             header="Действия"
-            body={(users) => actionButtonsTemplate(users.id)}
+            body={(users) => actionButtonsTemplate(users)}
           ></Column>
         </DataTable>
       </div>

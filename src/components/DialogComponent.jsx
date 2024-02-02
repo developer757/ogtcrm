@@ -44,7 +44,7 @@ export const DialogComponent = ({
               <h4 className="m-0">{input.label}</h4>
               {input.type === "text" ? (
                 <InputText
-                  value={dialogInputObject[index]}
+                  value={dialogInputObject[input.key]}
                   onChange={(e) =>
                     handleDialogInputChange(input.key, e.target.value)
                   }
@@ -71,8 +71,12 @@ export const DialogComponent = ({
         })}
         <div className="flex">
           <Button
-            label={type === 'add' ? "Добавить" : "Редактировать"}
-            onClick={() => handleAdd(dialogInputObject)}
+            label={type === "add" ? "Добавить" : "Редактировать"}
+            onClick={() =>
+              type === "add"
+                ? handleAdd(dialogInputObject)
+                : handleEdit(dialogInputObject)
+            }
             className="w-full"
           />
         </div>

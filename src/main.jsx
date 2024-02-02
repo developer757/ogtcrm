@@ -14,11 +14,9 @@ const value = {
 };
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <PrimeReactProvider value={value}>
-        <App />
-      </PrimeReactProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+  <BrowserRouter>
+    <PrimeReactProvider value={value}>
+      <App />
+    </PrimeReactProvider>
+  </BrowserRouter>
 );

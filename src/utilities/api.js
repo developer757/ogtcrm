@@ -22,6 +22,13 @@ export const addUser = (dialogInputObject) =>
     role: dialogInputObject.role,
   });
 
+export const editUser = (dialogInputObject, id) =>
+  axios.put(`http://25.18.88.64:8000/api/users/update/${id}`, {
+    name: dialogInputObject.name,
+    email: dialogInputObject.email,
+    role: dialogInputObject.role,
+  });
+
 export const deleteUser = (id) =>
   axios.delete(`http://25.18.88.64:8000/api/users/${id}`);
 
