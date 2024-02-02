@@ -14,6 +14,7 @@ import { DialogComponent } from "../../components/DialogComponent";
 function Domains() {
   const [domains, setDomains] = useState([]);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
+  const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
@@ -129,12 +130,11 @@ function Domains() {
       .then(function (response) {
         setToastMessage(response.data.message);
         setIsAddDialogVisible(false);
-        setDomainName("");
+        setDialogInputObject({});
         renderDomains();
       })
       .catch(function (error) {
         setToastMessage("Ошибка при добавлении домена");
-        setDomainName("");
       });
   };
 
@@ -156,7 +156,12 @@ function Domains() {
   const actionBodyTemplate = (rowData) => {
     return (
       <div className="flex gap-3">
-        <Button icon="pi pi-pencil" severity="success" aria-label="Search" />
+        <Button
+          icon="pi pi-pencil"
+          severity="success"
+          aria-label="Search"
+          onClick={setIsEditDialogVisible}
+        />
 
         <Button
           onClick={(e) => confirmDeleteDomain(e, rowData)}
@@ -208,9 +213,19 @@ function Domains() {
         />
         <DialogComponent
           type="add"
-          isAddDialogVisible={isAddDialogVisible}
-          setIsAddDialogVisible={setIsAddDialogVisible}
+          isDialogVisible={isAddDialogVisible}
+          setIsDialogVisible={setIsAddDialogVisible}
           header={"Добавить домен"}
+          dialogInputObject={dialogInputObject}
+          setDialogInputObject={setDialogInputObject}
+          inputs={inputs}
+          handleAdd={addNewDomain}
+        />
+        <DialogComponent
+          type="edit"
+          isDialogVisible={isEditDialogVisible}
+          setIsDialogVisible={setIsEditDialogVisible}
+          header={"Редактировать домен"}
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}

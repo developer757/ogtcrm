@@ -6,10 +6,8 @@ import { InputText } from "primereact/inputtext";
 
 export const DialogComponent = ({
   type,
-  isAddDialogVisible,
-  setIsAddDialogVisible,
-  isEditDialogVisible,
-  setIsEditDialogVisible,
+  isDialogVisible,
+  setIsDialogVisible,
   header,
   inputs,
   dialogInputObject,
@@ -31,12 +29,8 @@ export const DialogComponent = ({
   return (
     <Dialog
       header={header}
-      visible={isAddDialogVisible || isEditDialogVisible}
-      onHide={() =>
-        setIsAddDialogVisible
-          ? setIsAddDialogVisible(false)
-          : setIsEditDialogVisible(false)
-      }
+      visible={isDialogVisible}
+      onHide={() => setIsDialogVisible(false)}
       style={{ width: "100%", maxWidth: "400px" }}
     >
       <div className="flex flex-column gap-4 mt-2">
@@ -77,7 +71,7 @@ export const DialogComponent = ({
         })}
         <div className="flex">
           <Button
-            label={isAddDialogVisible ? "Добавить" : "Редактировать"}
+            label={type === 'add' ? "Добавить" : "Редактировать"}
             onClick={() => handleAdd(dialogInputObject)}
             className="w-full"
           />
