@@ -24,3 +24,15 @@ export const addUser = (dialogInputObject) =>
 
 export const deleteUser = (id) =>
   axios.delete(`http://25.18.88.64:8000/api/users/${id}`);
+
+export const getDomains = () =>
+  axios.get(`http://25.18.88.64:8000/api/domains`);
+
+export const deleteDomain = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/domains/${id}`);
+
+export const addDomain = (domain) =>
+  axios.post(`http://25.18.88.64:8000/api/domains/store`, {
+    domain_name: domain.name,
+    user_name: domain.user,
+  });

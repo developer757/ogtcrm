@@ -15,10 +15,8 @@ export const DialogComponent = ({
   dialogInputObject,
   setDialogInputObject,
   handleAdd,
-  handleEdit
+  handleEdit,
 }) => {
-  const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
-
   useEffect(() => {
     console.log(dialogInputObject);
   }, [dialogInputObject]);
@@ -43,6 +41,10 @@ export const DialogComponent = ({
     >
       <div className="flex flex-column gap-4 mt-2">
         {inputs.map((input, index) => {
+          if (input.options && input.options[0]) {
+            var options = input.options[0];
+            var firstKey = Object.keys(options)[0];
+          }
           return (
             <div className="flex flex-column gap-2" key={index}>
               <h4 className="m-0">{input.label}</h4>
@@ -57,18 +59,17 @@ export const DialogComponent = ({
                 />
               ) : input.type === "dropdown" ? (
                 <Dropdown
-                  value={dialogInputObject.role}
+                  value={dialogInputObject[input.key]}
                   onChange={(e) =>
-                    handleDialogInputChange("role", e.target.value)
+                    handleDialogInputChange(input.key, e.target.value)
                   }
-                  options={dialogRoles}
-                  optionLabel="name"
-                  optionValue="name"
-                  placeholder="Выберите роль"
+                  options={input.options}
+                  optionLabel={firstKey}
+                  optionValue={firstKey}
+                  placeholder={input.placeholder}
                   className="w-full"
                 />
               ) : (
-                // Код, который будет отображаться для других типов input
                 <span>Другой тип input</span>
               )}
             </div>
