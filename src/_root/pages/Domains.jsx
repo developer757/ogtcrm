@@ -8,14 +8,21 @@ import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 
-import { getDomains, deleteDomain, addDomain } from "../../utilities/api";
+import {
+  getDomains,
+  deleteDomain,
+  addDomain,
+  editDomain,
+  getUsers,
+} from "../../utilities/api";
 import { DialogComponent } from "../../components/DialogComponent";
 
 function Domains() {
   const [domains, setDomains] = useState([]);
+  const [users, setUsers] = useState([]);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [toastMessage, setToastMessage] = useState({ text: "", severity: "" });
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -29,14 +36,7 @@ function Domains() {
   });
 
   const toast = useRef(null);
-
-  const dialogUsers = [
-    { name: "Dev57" },
-    { name: "Dirty Harry" },
-    { name: "DEP" },
-    { name: "Kovalev" },
-    { name: "Washington" },
-  ];
+  const isMounting = useRef(true);
 
   const inputs = [
     {
@@ -50,17 +50,36 @@ function Domains() {
       key: "user",
       type: "dropdown",
       placeholder: "Выберите пользователя",
-      options: dialogUsers,
+      options: users,
     },
   ];
 
   useEffect(() => {
     renderDomains();
+    getUsers()
+      .then((response) => {
+        setUsers(
+          response.data.map((user) => {
+            return { name: user.name };
+          })
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+        setToastMessage({
+          text: "Ошибка при загрузке доменов",
+          severity: "error",
+        });
+      });
   }, []);
 
   useEffect(() => {
-    if (toastMessage) {
-      showToast("success");
+    if (!isMounting.current) {
+      if (toastMessage) {
+        showToast();
+      }
+    } else {
+      isMounting.current = false;
     }
   }, [toastMessage]);
 
@@ -72,7 +91,10 @@ function Domains() {
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage("Ошибка при загрузке воронок");
+        setToastMessage({
+          text: "Ошибка при загрузке доменов",
+          severity: "error",
+        });
       });
   };
 
@@ -86,10 +108,10 @@ function Domains() {
     setGlobalFilterValue(value);
   };
 
-  const showToast = (severity) => {
+  const showToast = () => {
     toast.current.show({
-      severity: severity,
-      detail: toastMessage,
+      severity: toastMessage.severity,
+      detail: toastMessage.text,
       life: 3000,
     });
   };
@@ -108,19 +130,22 @@ function Domains() {
   };
 
   const rejectDeletion = () => {
-    setToastMessage("Удаление домена отменено");
+    setToastMessage({ text: "Удаление домена отменено", severity: "info" });
   };
 
   const deleteSelectedDomain = () => {
     if (currentRowData) {
       deleteDomain(currentRowData.id)
         .then(function (response) {
-          setToastMessage(response.data.message);
+          setToastMessage({ text: response.data.message, severity: "success" });
           renderDomains();
         })
         .catch(function (error) {
           console.log(error);
-          setToastMessage("Ошибка удаления домена");
+          setToastMessage({
+            text: "Ошибка удаления домена",
+            severity: "error",
+          });
         });
     }
   };
@@ -128,13 +153,43 @@ function Domains() {
   const addNewDomain = () => {
     addDomain(dialogInputObject)
       .then(function (response) {
-        setToastMessage(response.data.message);
+        setToastMessage({ text: response.data.message, severity: "success" });
         setIsAddDialogVisible(false);
         setDialogInputObject({});
         renderDomains();
       })
       .catch(function (error) {
-        setToastMessage("Ошибка при добавлении домена");
+        console.log(error);
+        setToastMessage({
+          text: "Ошибка добавления домена",
+          severity: "error",
+        });
+      });
+  };
+
+  const handleEdit = (event, domains) => {
+    console.log(domains);
+    setCurrentRowData(domains.id);
+    setIsEditDialogVisible(true);
+    setDialogInputObject({
+      name: domains.domain_name,
+      user: domains.user_name,
+    });
+  };
+
+  const editCurrentDomain = () => {
+    editDomain(dialogInputObject, currentRowData)
+      .then(function (response) {
+        setToastMessage({ text: response.data.message, severity: "success" });
+        setIsEditDialogVisible(false);
+        setDialogInputObject({});
+        renderDomains();
+      })
+      .catch(function (error) {
+        setToastMessage({
+          text: "Ошибка при редактировании домена",
+          severity: "error",
+        });
       });
   };
 
@@ -160,7 +215,7 @@ function Domains() {
           icon="pi pi-pencil"
           severity="success"
           aria-label="Search"
-          onClick={setIsEditDialogVisible}
+          onClick={(e) => handleEdit(e, rowData)}
         />
 
         <Button
@@ -229,7 +284,7 @@ function Domains() {
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
-          handleAdd={addNewDomain}
+          handleEdit={editCurrentDomain}
         />
       </div>
 

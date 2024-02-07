@@ -43,3 +43,9 @@ export const addDomain = (domain) =>
     domain_name: domain.name,
     user_name: domain.user,
   });
+
+export const editDomain = (domain, id) =>
+  axios.put(`http://25.18.88.64:8000/api/domains/update/${id}`, {
+    domain_name: domain.name,
+    user_name: domain.user,
+  });
