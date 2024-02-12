@@ -23,13 +23,7 @@ function Domains() {
 
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
-  const [users] = useState([
-    { name: "Dev57" },
-    { name: "Dirty Harry" },
-    { name: "DEP" },
-    { name: "Kovalev" },
-    { name: "Washington" },
-  ]);
+  const [users, setUsers] = useState([]);
   const [toastMessage, setToastMessage] = useState({ text: "", severity: "" });
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
@@ -95,7 +89,10 @@ function Domains() {
   const renderDomains = () => {
     getDomains()
       .then((response) => {
-        const renamedData = response.data.map(item => ({ ...item, name: item.user_name }));
+        const renamedData = response.data.map((item) => ({
+          ...item,
+          name: item.user_name,
+        }));
         setDomains(renamedData);
         setLoading(false);
       })
