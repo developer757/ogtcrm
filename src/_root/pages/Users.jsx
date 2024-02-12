@@ -187,6 +187,7 @@ function Users() {
       addUser(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
+          showAcceptToast()
           renderUsers();
         })
         .catch(function (error) {
@@ -214,7 +215,7 @@ function Users() {
 
   const handleDeleteUser = () => {
     console.log(dialogInputObject, selectedUserID);
-    deleteUser(dialogInputObject, selectedUserID)
+    deleteUser(selectedUserID)
       .then(function (response) {
         showAcceptToast();
         renderUsers();

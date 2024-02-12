@@ -7,7 +7,7 @@ import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
-
+import { MultiSelect } from "primereact/multiselect";
 import { getDomains, deleteDomain, addDomain } from "../../utilities/api";
 import { DialogComponent } from "../../components/DialogComponent";
 
@@ -16,9 +16,17 @@ function Domains() {
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [users] = useState([
+    { name: "Dev57" },
+    { name: "Dirty Harry" },
+    { name: "DEP" },
+    { name: "Kovalev" },
+    { name: "Washington" },
+  ]);
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.IN },
   });
   const [loading, setLoading] = useState(true);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
@@ -67,12 +75,13 @@ function Domains() {
   const renderDomains = () => {
     getDomains()
       .then((response) => {
-        setDomains(response.data);
+        const renamedData = response.data.map(item => ({ ...item, name: item.user_name }));
+        setDomains(renamedData);
         setLoading(false);
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage("Ошибка при загрузке воронок");
+        setToastMessage("Ошибка при загрузке доменов");
       });
   };
 
@@ -172,6 +181,31 @@ function Domains() {
     );
   };
 
+  const representativeFilterTemplate = (options) => {
+    console.log(options.value, options);
+    return (
+      <MultiSelect
+        value={options.value}
+        options={users}
+        onChange={(e) => options.filterApplyCallback(e.value)}
+        placeholder="Any"
+        optionLabel="name"
+        optionValue="name"
+        className="p-column-filter"
+      />
+    );
+  };
+
+  const representativeBodyTemplate = (rowData) => {
+    console.log(rowData);
+
+    return (
+      <div className="flex align-items-center gap-2">
+        <span>{rowData.user_name}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="" style={{ maxWidth: "80%", margin: "0 auto" }}>
       <Toast ref={toast} />
@@ -262,7 +296,16 @@ function Domains() {
             style={{ width: "20%" }}
           ></Column>
           <Column field="domain_name" header="Домен"></Column>
-          <Column field="user_name" header="Пользователь"></Column>
+          <Column
+            field="name"
+            header="Пользователь"
+            filter
+            filterField="name"
+            showFilterMatchModes={false}
+            optionLabel="username"
+            body={representativeBodyTemplate}
+            filterElement={representativeFilterTemplate}
+          ></Column>
           <Column
             field="category"
             header="Действие"
