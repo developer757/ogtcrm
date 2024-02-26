@@ -25,7 +25,7 @@ function RootLayout() {
     }
   }, []);
 
-  const swithThemeHandler = (value) => {
+  const switchThemeHandler = (value) => {
     setChecked(value);
     const newTheme =
       theme === "lara-dark-green" ? "lara-light-green" : "lara-dark-green";
@@ -43,11 +43,12 @@ function RootLayout() {
         <SidebarStyled
           visible={sidebarVisible}
           setVisible={setSidebarVisible}
+          theme={theme}
         />
 
         <InputSwitch
           checked={checked}
-          onChange={(e) => swithThemeHandler(e.value)}
+          onChange={(e) => switchThemeHandler(e.value)}
         />
       </header>
 

@@ -228,7 +228,7 @@ function Funnels() {
             sortable
             style={{ width: "30%" }}
           ></Column>
-          <Column field="funnel_name" header="Воронка"></Column>
+          <Column field="name" header="Воронка"></Column>
           <Column
             field="category"
             header="Действие"

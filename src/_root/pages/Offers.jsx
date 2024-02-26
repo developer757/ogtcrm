@@ -5,89 +5,136 @@ import { Button } from "primereact/button";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { getUsers, deleteUser, addUser, editUser } from "../../utilities/api";
+import {
+  getOffers,
+  getCountries,
+  getFunnels,
+  deleteUser,
+  addUser,
+  editUser,
+} from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
+import { Chip } from "primereact/chip";
 
-function Users() {
-  const [users, setUsers] = useState(null);
+function Offers() {
+  const [offers, setOffers] = useState(null);
   const [selectedUserID, setSelectedUserID] = useState(null);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [funnelsNames, setFunnelsNames] = useState([]);
+  const [geoNames, setGeoNames] = useState([]);
+  const [selectedFunnels, setSelectedFunnels] = useState(null);
+  const [selectedGeo, setSelectedGeo] = useState(null);
+  const [offerStartDate, setOfferStartDate] = useState(null);
+  const [offerEndDate, setOfferEndDate] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [dialogInputObject, setDialogInputObject] = useState({
     name: "",
-    email: "",
-    password: "",
-    role: "",
+    cap: "",
+    funnels: [],
+    geo: [],
+    offer_start: "",
+    offer_end: "",
   });
-
-  const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
 
   const toast = useRef(null);
 
   const addDialogInputs = [
     {
-      label: "Имя",
+      label: "Оффер",
       key: "name",
       type: "text",
-      placeholder: "Введите имя",
+      placeholder: "Введите название оффера",
     },
     {
-      label: "Почта",
-      key: "email",
+      label: "Капа",
+      key: "cap",
       type: "text",
-      placeholder: "Введите почту",
+      placeholder: "Введите капу",
     },
     {
-      label: "Пароль",
-      key: "password",
-      type: "text",
-      placeholder: "Введите пароль",
+      label: "Воронки",
+      key: "funnels",
+      type: "multiselect funnels",
+      placeholder: "Выберите воронки",
+      options: funnelsNames,
     },
     {
-      label: "Роль",
-      key: "role",
-      type: "dropdown",
-      placeholder: "Выберите роль",
-      options: dialogRoles,
+      label: "Гео",
+      key: "geo",
+      type: "multiselect geo",
+      placeholder: "Выберите гео",
+      options: geoNames,
+    },
+    {
+      label: "Начало капы",
+      key: "offer_start",
+      type: "calendar offerstart",
+      placeholder: "Выберите начало капы",
+    },
+    {
+      label: "Конец капы",
+      key: "offer_end",
+      type: "calendar offerend",
+      placeholder: "Выберите конец капы",
     },
   ];
 
-  const editDialogInputs = [
-    {
-      label: "Имя",
-      key: "name",
-      type: "text",
-      placeholder: "Введите имя",
-    },
-    {
-      label: "Почта",
-      key: "email",
-      type: "text",
-      placeholder: "Введите почту",
-    },
-    {
-      label: "Роль",
-      key: "role",
-      type: "dropdown",
-      placeholder: "Выберите роль",
-      options: dialogRoles,
-    },
-  ];
+  // const editDialogInputs = [
+  //   {
+  //     label: "Имя",
+  //     key: "name",
+  //     type: "text",
+  //     placeholder: "Введите имя",
+  //   },
+  //   {
+  //     label: "Почта",
+  //     key: "email",
+  //     type: "text",
+  //     placeholder: "Введите почту",
+  //   },
+  //   {
+  //     label: "Роль",
+  //     key: "role",
+  //     type: "dropdown",
+  //     placeholder: "Выберите роль",
+  //     options: funnelsArray,
+  //   },
+  // ];
 
   useEffect(() => {
-    renderUsers();
+    console.log(offers);
+    console.log(geoNames);
+    console.log(funnelsNames);
+    console.log(selectedFunnels);
+    console.log(selectedGeo);
+  });
+
+  useEffect(() => {
+    renderOffers();
+    getFunnels().then((response) => {
+      setFunnelsNames(response.data);
+    });
+    getCountries().then((response) => {
+      setGeoNames(getFilteredGeoNames(response.data));
+    });
   }, []);
 
-  const renderUsers = () => {
-    getUsers().then(function (response) {
-      setUsers(response.data);
-      console.log(response.data)
+  const renderOffers = () => {
+    getOffers().then(function (response) {
+      setOffers(response.data);
+    });
+  };
+
+  const getFilteredGeoNames = (array) => {
+    return array.map((obj) => {
+      const { iso } = obj;
+      return { iso };
     });
   };
 
@@ -107,8 +154,8 @@ function Users() {
   };
 
   useEffect(() => {
-    console.log(selectedUserID)
-  }, [selectedUserID])
+    console.log(selectedUserID);
+  }, [selectedUserID]);
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     if (option === "accept") {
@@ -118,6 +165,23 @@ function Users() {
     }
     hide();
     setSelectedUserID(null);
+  };
+
+  const formatCalendarTime = (timestamp, option) => {
+    if (option === "to string") {
+      const originalDate = new Date(timestamp);
+      const hours = timestamp.getHours().toString().padStart(2, "0");
+      const minutes = timestamp.getMinutes().toString().padStart(2, "0");
+
+      const formattedTime = `${hours}:${minutes}`;
+      return formattedTime;
+    } else {
+      const dateString = timestamp;
+      const [year, month, day] = dateString.split("-");
+      const formattedDate = new Date(year, month - 1, day);
+
+      return formattedDate;
+    }
   };
 
   const actionButtonsTemplate = (users) => {
@@ -188,8 +252,8 @@ function Users() {
       addUser(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
-          showAcceptToast()
-          renderUsers();
+          showAcceptToast();
+          renderOffers();
         })
         .catch(function (error) {
           console.log(error);
@@ -204,7 +268,7 @@ function Users() {
       editUser(dialogInputObject, selectedUserID)
         .then(function (response) {
           setIsEditDialogVisible(false);
-          renderUsers();
+          renderOffers();
         })
         .catch(function (error) {
           console.log(error);
@@ -219,7 +283,7 @@ function Users() {
     deleteUser(selectedUserID)
       .then(function (response) {
         showAcceptToast();
-        renderUsers();
+        renderOffers();
       })
       .catch(function (error) {
         console.log(error);
@@ -269,6 +333,37 @@ function Users() {
     );
   };
 
+  const funnelsTemplate = (object) => {
+    const funnelsArray = JSON.parse(object.funnels);
+    return (
+      <div className="flex gap-2">
+        {funnelsArray.map((item) => (
+          <Chip key={item} label={item} />
+        ))}
+      </div>
+    );
+  };
+
+  const geoTemplate = (object) => {
+    const geoArray = JSON.parse(object.geo);
+    return (
+      <div className="flex gap-2">
+        {geoArray.map((item) => (
+          <Chip key={item} label={item} />
+        ))}
+      </div>
+    );
+  };
+
+  const capTimeTemplate = (object) => {
+    return (
+      <div className="flex flex-column">
+        {object["offer_start"].slice(0, -3)} -{" "}
+        {object["offer_end"].slice(0, -3)}
+      </div>
+    );
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -278,30 +373,41 @@ function Users() {
         type="add"
         isDialogVisible={isAddDialogVisible}
         setIsDialogVisible={setIsAddDialogVisible}
-        header={"Добавить пользователя"}
+        header={"Добавить оффер"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
         handleAdd={handleAddUser}
+        selectedGeo={selectedGeo}
+        geoNames={geoNames}
+        setSelectedGeo={setSelectedGeo}
+        selectedFunnels={selectedFunnels}
+        funnelsNames={funnelsNames}
+        setSelectedFunnels={setSelectedFunnels}
+        offerStartDate={offerStartDate}
+        setOfferStartDate={setOfferStartDate}
+        offerEndDate={offerEndDate}
+        setOfferEndDate={setOfferEndDate}
+        formatCalendarTime={formatCalendarTime}
       />
 
-      <DialogComponent
+      {/* <DialogComponent
         type="edit"
         isDialogVisible={isEditDialogVisible}
         setIsDialogVisible={setIsEditDialogVisible}
-        header={"Редактировать пользователя"}
+        header={"Редактировать оффера"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
         handleEdit={handleEditUser}
-      />
+      /> */}
 
       <div className="flex flex-column align-items-center justify-content-center">
         <div
           className="flex justify-content-between my-5"
           style={{ width: "90%" }}
         >
-          <h2 className="m-0">Пользователи</h2>
+          <h2 className="m-0">Оффера</h2>
           <Button
             label="Добавить"
             icon="pi pi-plus"
@@ -309,7 +415,7 @@ function Users() {
           />
         </div>
         <DataTable
-          value={users}
+          value={offers}
           paginator
           header={header}
           rows={10}
@@ -321,9 +427,16 @@ function Users() {
           style={{ width: "90%" }}
         >
           <Column field="id" header="ID"></Column>
-          <Column field="name" header="Имя"></Column>
-          <Column field="email" header="Почта"></Column>
-          <Column field="role" header="Роль"></Column>
+          <Column field="name" header="Оффер"></Column>
+          <Column field="cap" header="Капа"></Column>
+          <Column
+            field="funnels"
+            header="Воронки"
+            body={funnelsTemplate}
+          ></Column>
+          <Column field="geo" header="Гео" body={geoTemplate}></Column>
+          <Column body={capTimeTemplate} header="Время капы"></Column>
+          <Column field="active" header="Активность"></Column>
           <Column
             header="Действия"
             body={(users) => actionButtonsTemplate(users)}
@@ -334,4 +447,4 @@ function Users() {
   );
 }
 
-export default Users;
+export default Offers;

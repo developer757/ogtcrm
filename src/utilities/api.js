@@ -49,3 +49,26 @@ export const editDomain = (domain, id) =>
     domain_name: domain.name,
     user_name: domain.user,
   });
+
+export const getSpends = () => axios.get(`http://25.18.88.64:8000/api/spends`);
+
+export const addSpends = (dialogInputObject) =>
+  axios.post(`http://25.18.88.64:8000/api/spends/store`, {
+    name: dialogInputObject.name,
+    summary: dialogInputObject.summary,
+    date: dialogInputObject.date,
+  });
+
+export const deleteSpends = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/spends/${id}`);
+
+export const editSpends = (dialogInputObject, id) =>
+  axios.put(`http://25.18.88.64:8000/api/spends/update/${id}`, {
+    name: dialogInputObject.name,
+    summary: dialogInputObject.summary,
+    date: dialogInputObject.date,
+  });
+
+export const getOffers = () => axios.get(`http://25.18.88.64:8000/api/offers`);
+
+export const getCountries = () => axios.get(`http://25.18.88.64:8000/api/country`);

@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { sidebarLinks } from "../utilities/renderSidebarLinks";
 import SidebarLink from "./SidebarLink";
 
-function SidebarStyled({ visible, setVisible }) {
+function SidebarStyled({ visible, setVisible, theme }) {
   const handleHide = () => {
     setVisible(false);
   };
@@ -15,19 +15,22 @@ function SidebarStyled({ visible, setVisible }) {
       onHide={() => handleHide()}
       content={({ closeIconRef, hide }) => (
         <div className="flex flex-column h-full">
-          <div className="flex align-items-center justify-content-between px-4 pt-3 flex-shrink-0">
+          <div className="flex align-items-center justify-content-between px-3 pt-3 flex-shrink-0">
             <span className="inline-flex align-items-center gap-2">
-              <img src="/assets/images/ogtLogo.png" width={140} />
+              {theme === "lara-dark-green" ? (
+                <img src="/assets/images/ogt-logo-light.png" width={140} />
+              ) : (
+                <img src="/assets/images/ogt-logo-dark.png" width={140} />
+              )}
             </span>
             <span>
               <Button
                 type="button"
                 ref={closeIconRef}
                 onClick={(e) => hide(e)}
-                icon="pi pi-times"
-                rounded
                 outlined
-                className="h-2rem w-2rem"
+                icon="pi pi-chevron-right"
+                className="h-3rem w-3rem"
               ></Button>
             </span>
           </div>

@@ -5,28 +5,34 @@ import { Button } from "primereact/button";
 import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { getUsers, deleteUser, addUser, editUser } from "../../utilities/api";
+import {
+  addSpends,
+  getSpends,
+  getUsers,
+  deleteSpends,
+  editSpends,
+} from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
 
-function Users() {
+function Spends() {
+  const [spends, setSpends] = useState(null);
   const [users, setUsers] = useState(null);
-  const [selectedUserID, setSelectedUserID] = useState(null);
+  const [selectedSpendID, setSelectedSpendID] = useState(null);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [dialogNames, setDialogNames] = useState([]);
+  const [date, setDate] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
   const [dialogInputObject, setDialogInputObject] = useState({
     name: "",
-    email: "",
-    password: "",
-    role: "",
+    summary: "",
+    date: "",
   });
-
-  const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
 
   const toast = useRef(null);
 
@@ -34,27 +40,22 @@ function Users() {
     {
       label: "Имя",
       key: "name",
-      type: "text",
-      placeholder: "Введите имя",
-    },
-    {
-      label: "Почта",
-      key: "email",
-      type: "text",
-      placeholder: "Введите почту",
-    },
-    {
-      label: "Пароль",
-      key: "password",
-      type: "text",
-      placeholder: "Введите пароль",
-    },
-    {
-      label: "Роль",
-      key: "role",
       type: "dropdown",
-      placeholder: "Выберите роль",
-      options: dialogRoles,
+      placeholder: "Введите имя",
+      options: dialogNames,
+    },
+    {
+      label: "Сумма",
+      key: "summary",
+      type: "text",
+      placeholder: "Введите сумму",
+    },
+    {
+      label: "Дата",
+      key: "date",
+      type: "calendar",
+      placeholder: "Выберите дату",
+      options: dialogNames,
     },
   ];
 
@@ -62,78 +63,101 @@ function Users() {
     {
       label: "Имя",
       key: "name",
-      type: "text",
-      placeholder: "Введите имя",
-    },
-    {
-      label: "Почта",
-      key: "email",
-      type: "text",
-      placeholder: "Введите почту",
-    },
-    {
-      label: "Роль",
-      key: "role",
       type: "dropdown",
-      placeholder: "Выберите роль",
-      options: dialogRoles,
+      placeholder: "Введите имя",
+      options: dialogNames,
+    },
+    {
+      label: "Сумма",
+      key: "summary",
+      type: "text",
+      placeholder: "Введите сумму",
+    },
+    {
+      label: "Дата",
+      key: "date",
+      type: "calendar",
+      placeholder: "Выберите дату",
+      options: dialogNames,
     },
   ];
+  useEffect(() => {
+    console.log(dialogInputObject);
+  }, [dialogInputObject]);
 
   useEffect(() => {
-    renderUsers();
-  }, []);
+    console.log(dialogNames);
+    console.log(users);
+  }, [dialogNames, users]);
 
-  const renderUsers = () => {
-    getUsers().then(function (response) {
-      setUsers(response.data);
-      console.log(response.data)
+  const getFilteredUsers = (array) => {
+    return array.map((obj) => {
+      const { name } = obj;
+      return { name };
     });
   };
 
-  const handleTogglePopUp = (option, e, users) => {
+  useEffect(() => {
+    getUsers().then((response) => {
+      setUsers(response.data);
+      setDialogNames(getFilteredUsers(response.data));
+    });
+    console.log(dialogNames);
+    renderSpends();
+  }, []);
+
+  const renderSpends = () => {
+    getSpends().then(function (response) {
+      setSpends(response.data);
+      console.log(response.data);
+    });
+  };
+
+  const handleTogglePopUp = (option, e, spends) => {
     if (option === "add") {
       showPopUp(e);
     } else {
-      console.log(users);
+      console.log(spends);
+
       setDialogInputObject({
-        name: users.name,
-        email: users.email,
-        role: users.role,
+        name: spends.name,
+        summary: spends.summary,
+        date: formatCalendarDate(spends.date),
       });
       setIsEditDialogVisible(true);
+      console.log(formatCalendarDate(spends.date, "to timestamp"));
     }
-    setSelectedUserID(users.id);
+    setSelectedSpendID(spends.id);
   };
 
   useEffect(() => {
-    console.log(selectedUserID)
-  }, [selectedUserID])
+    console.log(selectedSpendID);
+  }, [selectedSpendID]);
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     if (option === "accept") {
-      handleDeleteUser(selectedUserID);
+      handleDeleteSpend(selectedSpendID);
     } else {
       showRejectToast();
     }
     hide();
-    setSelectedUserID(null);
+    setSelectedSpendID(null);
   };
 
-  const actionButtonsTemplate = (users) => {
+  const actionButtonsTemplate = (spends) => {
     return (
       <div className="flex gap-3">
         <Button
           icon="pi pi-pencil"
           severity="success"
           aria-label="Search"
-          onClick={(e) => handleTogglePopUp("edit", e, users)}
+          onClick={(e) => handleTogglePopUp("edit", e, spends)}
         />
         <Button
           icon="pi pi-trash"
           severity="danger"
           aria-label="Cancel"
-          onClick={(e) => handleTogglePopUp("add", e, users)}
+          onClick={(e) => handleTogglePopUp("add", e, spends)}
         />
       </div>
     );
@@ -169,7 +193,7 @@ function Users() {
     toast.current.show({
       severity: "info",
       summary: "До связи",
-      detail: "Удаление пользователя успешно",
+      detail: "Удаление расхода успешно",
       life: 3000,
     });
   };
@@ -178,18 +202,19 @@ function Users() {
     toast.current.show({
       severity: "success",
       summary: "На связи",
-      detail: "Удаление пользователя отклонено",
+      detail: "Удаление расхода отклонено",
       life: 3000,
     });
   };
 
-  const handleAddUser = ({ name, email, password, role }) => {
-    if (name !== "" && email !== "" && password !== "" && role !== "") {
-      addUser(dialogInputObject)
+  const handleAddSpend = ({ name, summary, date }) => {
+    if (name !== "" && summary !== "" && date !== "") {
+      addSpends(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
-          showAcceptToast()
-          renderUsers();
+          showAcceptToast();
+          renderSpends();
+          clearDialogInputObject();
         })
         .catch(function (error) {
           console.log(error);
@@ -199,12 +224,12 @@ function Users() {
     }
   };
 
-  const handleEditUser = ({ name, email, role }) => {
-    if (name !== "" && email !== "" && role !== "") {
-      editUser(dialogInputObject, selectedUserID)
+  const handleEditSpend = ({ name, summary, date }) => {
+    if (name !== "" && summary !== "" && date !== "") {
+      editSpends(dialogInputObject, selectedSpendID)
         .then(function (response) {
           setIsEditDialogVisible(false);
-          renderUsers();
+          renderSpends();
         })
         .catch(function (error) {
           console.log(error);
@@ -214,23 +239,32 @@ function Users() {
     }
   };
 
-  const handleDeleteUser = () => {
-    console.log(dialogInputObject, selectedUserID);
-    deleteUser(selectedUserID)
+  const handleDeleteSpend = () => {
+    console.log(dialogInputObject, selectedSpendID);
+    deleteSpends(selectedSpendID)
       .then(function (response) {
         showAcceptToast();
-        renderUsers();
+        renderSpends();
       })
       .catch(function (error) {
         console.log(error);
       });
   };
 
+  const clearDialogInputObject = () => {
+    setDialogInputObject({
+      name: "",
+      summary: "",
+      date: "",
+    });
+    console.log("cleared")
+  };
+
   const showPopUp = (e) => {
     confirmPopup({
       group: "headless",
       target: e.currentTarget,
-      message: "Вы точно хотите удалить пользователя?",
+      message: "Вы точно хотите удалить расход?",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
@@ -269,6 +303,24 @@ function Users() {
     );
   };
 
+  const formatCalendarDate = (timestamp, option) => {
+    if (option === "to string") {
+      const originalDate = new Date(timestamp);
+      const year = originalDate.getFullYear();
+      const month = String(originalDate.getMonth() + 1).padStart(2, "0");
+      const day = String(originalDate.getDate()).padStart(2, "0");
+
+      const formattedDate = `${year}-${month}-${day}`;
+      return formattedDate;
+    } else {
+      const dateString = timestamp;
+      const [year, month, day] = dateString.split("-");
+      const formattedDate = new Date(year, month - 1, day);
+
+      return formattedDate;
+    }
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -278,22 +330,28 @@ function Users() {
         type="add"
         isDialogVisible={isAddDialogVisible}
         setIsDialogVisible={setIsAddDialogVisible}
-        header={"Добавить пользователя"}
+        header={"Добавить расходы"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
-        handleAdd={handleAddUser}
+        handleAdd={handleAddSpend}
+        date={date}
+        setDate={setDate}
+        formatCalendarDate={formatCalendarDate}
       />
 
       <DialogComponent
         type="edit"
         isDialogVisible={isEditDialogVisible}
         setIsDialogVisible={setIsEditDialogVisible}
-        header={"Редактировать пользователя"}
+        header={"Редактировать расходы"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
-        handleEdit={handleEditUser}
+        handleEdit={handleEditSpend}
+        date={date}
+        setDate={setDate}
+        formatCalendarDate={formatCalendarDate}
       />
 
       <div className="flex flex-column align-items-center justify-content-center">
@@ -301,7 +359,7 @@ function Users() {
           className="flex justify-content-between my-5"
           style={{ width: "90%" }}
         >
-          <h2 className="m-0">Пользователи</h2>
+          <h2 className="m-0">Расходы</h2>
           <Button
             label="Добавить"
             icon="pi pi-plus"
@@ -309,7 +367,7 @@ function Users() {
           />
         </div>
         <DataTable
-          value={users}
+          value={spends}
           paginator
           header={header}
           rows={10}
@@ -322,11 +380,11 @@ function Users() {
         >
           <Column field="id" header="ID"></Column>
           <Column field="name" header="Имя"></Column>
-          <Column field="email" header="Почта"></Column>
-          <Column field="role" header="Роль"></Column>
+          <Column field="summary" header="Сумма"></Column>
+          <Column field="date" header="Дата"></Column>
           <Column
             header="Действия"
-            body={(users) => actionButtonsTemplate(users)}
+            body={(spends) => actionButtonsTemplate(spends)}
           ></Column>
         </DataTable>
       </div>
@@ -334,4 +392,4 @@ function Users() {
   );
 }
 
-export default Users;
+export default Spends;

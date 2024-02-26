@@ -1,8 +1,8 @@
 export const sidebarLinks = [
     {
         to: '/dashboard',
-        icon: 'pi-home',
-        name: 'Dashboard'
+        icon: 'pi-chart-pie',
+        name: 'Дашборд'
     },
     {
         to: '/statistics',
@@ -11,7 +11,7 @@ export const sidebarLinks = [
     },
     {
         to: '/leads',
-        icon: 'pi-stop',
+        icon: 'pi-user',
         name: 'Лиды'
     },
     {

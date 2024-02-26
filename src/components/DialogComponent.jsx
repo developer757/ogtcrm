@@ -3,6 +3,8 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { Calendar } from "primereact/calendar";
+import { MultiSelect } from "primereact/multiselect";
 
 export const DialogComponent = ({
   type,
@@ -14,6 +16,20 @@ export const DialogComponent = ({
   setDialogInputObject,
   handleAdd,
   handleEdit,
+  date,
+  setDate,
+  formatCalendarDate,
+  formatCalendarTime,
+  selectedGeo,
+  geoNames,
+  setSelectedGeo,
+  selectedFunnels,
+  funnelsNames,
+  setSelectedFunnels,
+  offerStartDate,
+  setOfferStartDate,
+  offerEndDate,
+  setOfferEndDate,
 }) => {
   useEffect(() => {
     console.log(dialogInputObject);
@@ -46,7 +62,7 @@ export const DialogComponent = ({
                 <InputText
                   value={dialogInputObject[input.key]}
                   onChange={(e) =>
-                    handleDialogInputChange(input.key, e.target.value)
+                    handleDialogInputChange(input.key, e.value)
                   }
                   style={{ width: "100%" }}
                   placeholder={input.placeholder}
@@ -55,13 +71,73 @@ export const DialogComponent = ({
                 <Dropdown
                   value={dialogInputObject[input.key]}
                   onChange={(e) =>
-                    handleDialogInputChange(input.key, e.target.value)
+                    handleDialogInputChange(input.key, e.value)
                   }
                   options={input.options}
                   optionLabel={firstKey}
                   optionValue={firstKey}
                   placeholder={input.placeholder}
                   className="w-full"
+                />
+              ) : input.type === "calendar" ? (
+                <Calendar
+                  value={date}
+                  onChange={(e) => {
+                    setDate(e.value);
+                    handleDialogInputChange(
+                      input.key,
+                      formatCalendarDate(e.value, "to string")
+                    );
+                  }}
+                  dateFormat="dd-mm-yy"
+                />
+              ) : input.type === "calendar offerstart" ? (
+                <Calendar
+                  value={offerStartDate}
+                  timeOnly
+                  onChange={(e) => {
+                    setOfferStartDate(e.value);
+                    handleDialogInputChange(
+                      input.key,
+                      formatCalendarTime(e.value, "to string")
+                    );
+                  }}
+                  dateFormat="dd-mm-yy"
+                />
+              ) : input.type === "calendar offerend" ? (
+                <Calendar
+                  value={offerEndDate}
+                  timeOnly
+                  onChange={(e) => {
+                    setOfferEndDate(e.value);
+                    handleDialogInputChange(
+                      input.key,
+                      formatCalendarTime(e.value, "to string")
+                    );
+                  }}
+                  dateFormat="dd-mm-yy"
+                />
+              ) : input.type === "multiselect funnels" ? (
+                <MultiSelect
+                  value={selectedFunnels}
+                  onChange={(e) => setSelectedFunnels(e.value)}
+                  options={funnelsNames}
+                  optionLabel="name"
+                  filter
+                  placeholder="Выберите воронки"
+                  maxSelectedLabels={3}
+                  className="w-full md:w-20rem"
+                />
+              ) : input.type === "multiselect geo" ? (
+                <MultiSelect
+                  value={selectedGeo}
+                  onChange={(e) => setSelectedGeo(e.value)}
+                  options={geoNames}
+                  optionLabel="iso"
+                  filter
+                  placeholder="Выберите гео"
+                  maxSelectedLabels={3}
+                  className="w-full md:w-20rem"
                 />
               ) : (
                 <span>Другой тип input</span>
