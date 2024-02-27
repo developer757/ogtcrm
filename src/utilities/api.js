@@ -79,3 +79,15 @@ export const editActivity = (id, active) =>
     id,
     active,
   });
+
+
+  export const getSources = () =>
+  axios.get(`http://25.18.88.64:8000/api/sources`);
+
+export const deleteSource = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/sources/${id}`);
+
+export const addSource = (sourceName) =>
+  axios.post(`http://25.18.88.64:8000/api/sources/store`, {
+    name: sourceName,
+  });
