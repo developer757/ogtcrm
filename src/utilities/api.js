@@ -72,3 +72,9 @@ export const editSpends = (dialogInputObject, id) =>
 export const getOffers = () => axios.get(`http://25.18.88.64:8000/api/offers`);
 
 export const getCountries = () => axios.get(`http://25.18.88.64:8000/api/country`);
+
+export const editActivity = (id, active) =>
+  axios.put(`http://25.18.88.64:8000/api/offers/activity`, {
+    id,
+    active,
+  });

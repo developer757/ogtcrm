@@ -12,11 +12,13 @@ import {
   deleteUser,
   addUser,
   editUser,
+  editActivity,
 } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
 import { Chip } from "primereact/chip";
+import { InputSwitch } from "primereact/inputswitch";
 
 function Offers() {
   const [offers, setOffers] = useState(null);
@@ -30,6 +32,8 @@ function Offers() {
   const [selectedGeo, setSelectedGeo] = useState(null);
   const [offerStartDate, setOfferStartDate] = useState(null);
   const [offerEndDate, setOfferEndDate] = useState(null);
+  const [activityChecked, setActivityChecked] = useState([]);
+
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
@@ -108,11 +112,13 @@ function Offers() {
   // ];
 
   useEffect(() => {
+    // console.log(offers);
+    // console.log(geoNames);
+    // console.log(funnelsNames);
+    // console.log(selectedFunnels);
+    // console.log(selectedGeo);
+    console.log(activityChecked);
     console.log(offers);
-    console.log(geoNames);
-    console.log(funnelsNames);
-    console.log(selectedFunnels);
-    console.log(selectedGeo);
   });
 
   useEffect(() => {
@@ -127,7 +133,17 @@ function Offers() {
 
   const renderOffers = () => {
     getOffers().then(function (response) {
+      const offerActiveArray = [];
+      response.data.forEach((obj) => {
+        offerActiveArray.push({
+          id: obj.id,
+          active: obj.active === 1,
+        });
+      });
+
+      console.log(offerActiveArray);
       setOffers(response.data);
+      setActivityChecked(offerActiveArray);
     });
   };
 
@@ -364,6 +380,39 @@ function Offers() {
     );
   };
 
+  const activityTemplate = (rowData) => {
+    const item = activityChecked.find((el) => el.id === rowData.id);
+  
+    return (
+      <InputSwitch
+        key={item.id}
+        checked={item.active}
+        onChange={(e) => handleToggleActivity(item.id, e.value)}
+      />
+    );
+  };
+
+  const handleToggleActivity = (id, value) => {
+    console.log(value)
+    const transformedActive = value ? 1 : 0;
+    handleEditActivity(id, transformedActive);
+    setActivityChecked((prevActivityChecked) =>
+      prevActivityChecked.map((item) =>
+        item.id === id ? { ...item, active: value } : item
+      )
+    );
+  };
+
+  const handleEditActivity = (id, active) => {
+    editActivity(id, active)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -436,7 +485,11 @@ function Offers() {
           ></Column>
           <Column field="geo" header="Гео" body={geoTemplate}></Column>
           <Column body={capTimeTemplate} header="Время капы"></Column>
-          <Column field="active" header="Активность"></Column>
+          <Column
+            field="active"
+            header="Активность"
+            body={activityTemplate}
+          ></Column>
           <Column
             header="Действия"
             body={(users) => actionButtonsTemplate(users)}
