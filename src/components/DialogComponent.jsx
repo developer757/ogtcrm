@@ -30,16 +30,16 @@ export const DialogComponent = ({
   setOfferStartDate,
   offerEndDate,
   setOfferEndDate,
+  sourcesNames,
+  setSelectedSources,
+  selectedSources
 }) => {
-  useEffect(() => {
-    console.log(dialogInputObject);
-  }, [dialogInputObject]);
-
   const handleDialogInputChange = (field, value) => {
     setDialogInputObject((prevState) => ({
       ...prevState,
       [field]: value,
     }));
+    console.log(field, value);
   };
 
   return (
@@ -47,7 +47,7 @@ export const DialogComponent = ({
       header={header}
       visible={isDialogVisible}
       onHide={() => setIsDialogVisible(false)}
-      style={{ width: "100%", maxWidth: "400px" }}
+      className="w-full max-w-25rem min-w-25rem"
     >
       <div className="flex flex-column gap-4 mt-2">
         {inputs.map((input, index) => {
@@ -95,6 +95,7 @@ export const DialogComponent = ({
                 <Calendar
                   value={offerStartDate}
                   timeOnly
+                  placeholder="00:00"
                   onChange={(e) => {
                     setOfferStartDate(e.value);
                     handleDialogInputChange(
@@ -108,6 +109,7 @@ export const DialogComponent = ({
                 <Calendar
                   value={offerEndDate}
                   timeOnly
+                  placeholder="24:00"
                   onChange={(e) => {
                     setOfferEndDate(e.value);
                     handleDialogInputChange(
@@ -119,24 +121,42 @@ export const DialogComponent = ({
                 />
               ) : input.type === "multiselect funnels" ? (
                 <MultiSelect
-                  value={selectedFunnels}
-                  onChange={(e) => setSelectedFunnels(e.value)}
+                  value={dialogInputObject.funnels}
+                  onChange={(e) => {
+                    handleDialogInputChange(input.key, e.value);
+                    setSelectedFunnels(e.value);
+                  }}
                   options={funnelsNames}
-                  optionLabel="name"
-                  filterplaceholder="Выберите воронки"
+                  filter
+                  placeholder="Выберите воронки"
                   maxSelectedLabels={3}
-                  className="w-full md:w-20rem"
+                  className="w-full"
                 />
               ) : input.type === "multiselect geo" ? (
                 <MultiSelect
-                  value={selectedGeo}
-                  onChange={(e) => setSelectedGeo(e.value)}
+                  value={dialogInputObject.geo}
+                  onChange={(e) => {
+                    handleDialogInputChange(input.key, e.value);
+                    setSelectedGeo(e.value);
+                  }}
                   options={geoNames}
-                  optionLabel="iso"
                   filter
                   placeholder="Выберите гео"
                   maxSelectedLabels={3}
-                  className="w-full md:w-20rem"
+                  className="w-full"
+                />
+              ) : input.type === "multiselect sources" ? (
+                <MultiSelect
+                  value={dialogInputObject.source}
+                  onChange={(e) => {
+                    handleDialogInputChange(input.key, e.value);
+                    setSelectedSources(e.value);
+                  }}
+                  options={sourcesNames}
+                  filter
+                  placeholder="Выберите источники"
+                  maxSelectedLabels={3}
+                  className="w-full"
                 />
               ) : (
                 <span>Другой тип input</span>

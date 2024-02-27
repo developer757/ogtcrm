@@ -52,17 +52,17 @@ export const editDomain = (domain, id) =>
 
 export const getSpends = () => axios.get(`http://25.18.88.64:8000/api/spends`);
 
-export const addSpends = (dialogInputObject) =>
+export const addSpend = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/spends/store`, {
     name: dialogInputObject.name,
     summary: dialogInputObject.summary,
     date: dialogInputObject.date,
   });
 
-export const deleteSpends = (id) =>
+export const deleteSpend = (id) =>
   axios.delete(`http://25.18.88.64:8000/api/spends/${id}`);
 
-export const editSpends = (dialogInputObject, id) =>
+export const editSpend = (dialogInputObject, id) =>
   axios.put(`http://25.18.88.64:8000/api/spends/update/${id}`, {
     name: dialogInputObject.name,
     summary: dialogInputObject.summary,
@@ -74,14 +74,38 @@ export const getOffers = () => axios.get(`http://25.18.88.64:8000/api/offers`);
 export const getCountries = () =>
   axios.get(`http://25.18.88.64:8000/api/country`);
 
+export const addOffer = (dialogInputObject) =>
+  axios.post(`http://25.18.88.64:8000/api/offers/store`, {
+    name: dialogInputObject.name,
+    cap: dialogInputObject.cap,
+    funnels: JSON.stringify(dialogInputObject.funnels),
+    geo: JSON.stringify(dialogInputObject.geo),
+    offer_start: dialogInputObject.offer_start,
+    offer_end: dialogInputObject.offer_end,
+    source: JSON.stringify(dialogInputObject.source),
+  });
+
+export const editOffer = (dialogInputObject, id) =>
+  axios.put(`http://25.18.88.64:8000/api/offers/update/${id}`, {
+    name: dialogInputObject.name,
+    cap: dialogInputObject.cap,
+    funnels: JSON.stringify(dialogInputObject.funnels),
+    geo: JSON.stringify(dialogInputObject.geo),
+    offer_start: dialogInputObject.offer_start,
+    offer_end: dialogInputObject.offer_end,
+    source: JSON.stringify(dialogInputObject.source),
+  });
+
+export const deleteOffer = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/offers/${id}`);
+
 export const editActivity = (id, active) =>
   axios.put(`http://25.18.88.64:8000/api/offers/activity`, {
     id,
     active,
   });
 
-
-  export const getSources = () =>
+export const getSources = () =>
   axios.get(`http://25.18.88.64:8000/api/sources`);
 
 export const deleteSource = (id) =>

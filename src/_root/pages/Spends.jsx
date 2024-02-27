@@ -6,11 +6,11 @@ import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import {
-  addSpends,
+  addSpend,
   getSpends,
   getUsers,
-  deleteSpends,
-  editSpends,
+  deleteSpend,
+  editSpend,
 } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -209,7 +209,7 @@ function Spends() {
 
   const handleAddSpend = ({ name, summary, date }) => {
     if (name !== "" && summary !== "" && date !== "") {
-      addSpends(dialogInputObject)
+      addSpend(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
           showAcceptToast();
@@ -226,7 +226,7 @@ function Spends() {
 
   const handleEditSpend = ({ name, summary, date }) => {
     if (name !== "" && summary !== "" && date !== "") {
-      editSpends(dialogInputObject, selectedSpendID)
+      editSpend(dialogInputObject, selectedSpendID)
         .then(function (response) {
           setIsEditDialogVisible(false);
           renderSpends();
@@ -241,7 +241,7 @@ function Spends() {
 
   const handleDeleteSpend = () => {
     console.log(dialogInputObject, selectedSpendID);
-    deleteSpends(selectedSpendID)
+    deleteSpend(selectedSpendID)
       .then(function (response) {
         showAcceptToast();
         renderSpends();

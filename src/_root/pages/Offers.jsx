@@ -9,10 +9,11 @@ import {
   getOffers,
   getCountries,
   getFunnels,
-  deleteUser,
-  addUser,
-  editUser,
+  deleteOffer,
+  addOffer,
+  editOffer,
   editActivity,
+  getSources,
 } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -22,7 +23,7 @@ import { InputSwitch } from "primereact/inputswitch";
 
 function Offers() {
   const [offers, setOffers] = useState(null);
-  const [selectedUserID, setSelectedUserID] = useState(null);
+  const [selectedOfferID, setSelectedOfferID] = useState(null);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
@@ -33,6 +34,8 @@ function Offers() {
   const [offerStartDate, setOfferStartDate] = useState(null);
   const [offerEndDate, setOfferEndDate] = useState(null);
   const [activityChecked, setActivityChecked] = useState([]);
+  const [sourcesNames, setSourcesNames] = useState([]);
+  const [selectedSources, setSelectedSources] = useState(null);
 
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -44,6 +47,7 @@ function Offers() {
     geo: [],
     offer_start: "",
     offer_end: "",
+    source: [],
   });
 
   const toast = useRef(null);
@@ -87,29 +91,60 @@ function Offers() {
       type: "calendar offerend",
       placeholder: "Выберите конец капы",
     },
+    {
+      label: "Источники",
+      key: "source",
+      type: "multiselect sources",
+      placeholder: "Выберите источники",
+    },
   ];
 
-  // const editDialogInputs = [
-  //   {
-  //     label: "Имя",
-  //     key: "name",
-  //     type: "text",
-  //     placeholder: "Введите имя",
-  //   },
-  //   {
-  //     label: "Почта",
-  //     key: "email",
-  //     type: "text",
-  //     placeholder: "Введите почту",
-  //   },
-  //   {
-  //     label: "Роль",
-  //     key: "role",
-  //     type: "dropdown",
-  //     placeholder: "Выберите роль",
-  //     options: funnelsArray,
-  //   },
-  // ];
+  const editDialogInputs = [
+    {
+      label: "Оффер",
+      key: "name",
+      type: "text",
+      placeholder: "Введите название оффера",
+    },
+    {
+      label: "Капа",
+      key: "cap",
+      type: "text",
+      placeholder: "Введите капу",
+    },
+    {
+      label: "Воронки",
+      key: "funnels",
+      type: "multiselect funnels",
+      placeholder: "Выберите воронки",
+      options: funnelsNames,
+    },
+    {
+      label: "Гео",
+      key: "geo",
+      type: "multiselect geo",
+      placeholder: "Выберите гео",
+      options: geoNames,
+    },
+    {
+      label: "Начало капы",
+      key: "offer_start",
+      type: "calendar offerstart",
+      placeholder: "Выберите начало капы",
+    },
+    {
+      label: "Конец капы",
+      key: "offer_end",
+      type: "calendar offerend",
+      placeholder: "Выберите конец капы",
+    },
+    {
+      label: "Источники",
+      key: "source",
+      type: "multiselect sources",
+      placeholder: "Выберите источники",
+    },
+  ];
 
   useEffect(() => {
     // console.log(offers);
@@ -117,17 +152,29 @@ function Offers() {
     // console.log(funnelsNames);
     // console.log(selectedFunnels);
     // console.log(selectedGeo);
-    console.log(activityChecked);
-    console.log(offers);
+    // console.log(selectedOfferID);
+    // console.log(sourcesNames);
+    // console.log(activityChecked);
+    // console.log(offers);
   });
+
+  useEffect(() => {
+    console.log(dialogInputObject);
+  }, [dialogInputObject]);
 
   useEffect(() => {
     renderOffers();
     getFunnels().then((response) => {
-      setFunnelsNames(response.data);
+      const funnelsArray = response.data.map(({ name }) => name);
+      setFunnelsNames(funnelsArray);
     });
     getCountries().then((response) => {
-      setGeoNames(getFilteredGeoNames(response.data));
+      const geoArray = response.data.map(({ iso }) => iso);
+      setGeoNames(geoArray);
+    });
+    getSources().then((response) => {
+      const sourcesArray = response.data.map(({ name }) => name);
+      setSourcesNames(sourcesArray);
     });
   }, []);
 
@@ -141,51 +188,46 @@ function Offers() {
         });
       });
 
-      console.log(offerActiveArray);
       setOffers(response.data);
       setActivityChecked(offerActiveArray);
     });
   };
 
-  const getFilteredGeoNames = (array) => {
-    return array.map((obj) => {
-      const { iso } = obj;
-      return { iso };
-    });
-  };
-
-  const handleTogglePopUp = (option, e, users) => {
+  const handleTogglePopUp = (option, e, rowData) => {
+    console.log(rowData);
     if (option === "add") {
       showPopUp(e);
     } else {
-      console.log(users);
       setDialogInputObject({
-        name: users.name,
-        email: users.email,
-        role: users.role,
+        name: rowData.name,
+        cap: rowData.cap,
+        funnels: JSON.parse(rowData.funnels),
+        geo: JSON.parse(rowData.geo),
+        offer_start: rowData.start,
+        offer_end: rowData.end,
+        source: JSON.parse(rowData.source),
       });
       setIsEditDialogVisible(true);
     }
-    setSelectedUserID(users.id);
+    setSelectedOfferID(rowData.id);
   };
 
   useEffect(() => {
-    console.log(selectedUserID);
-  }, [selectedUserID]);
+    console.log(selectedOfferID);
+  }, [selectedOfferID]);
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     if (option === "accept") {
-      handleDeleteUser(selectedUserID);
+      handleDeleteOffer(selectedOfferID);
     } else {
       showRejectToast();
     }
     hide();
-    setSelectedUserID(null);
+    setSelectedOfferID(null);
   };
 
   const formatCalendarTime = (timestamp, option) => {
     if (option === "to string") {
-      const originalDate = new Date(timestamp);
       const hours = timestamp.getHours().toString().padStart(2, "0");
       const minutes = timestamp.getMinutes().toString().padStart(2, "0");
 
@@ -200,20 +242,20 @@ function Offers() {
     }
   };
 
-  const actionButtonsTemplate = (users) => {
+  const actionButtonsTemplate = (rowData) => {
     return (
       <div className="flex gap-3">
         <Button
           icon="pi pi-pencil"
           severity="success"
           aria-label="Search"
-          onClick={(e) => handleTogglePopUp("edit", e, users)}
+          onClick={(e) => handleTogglePopUp("edit", e, rowData)}
         />
         <Button
           icon="pi pi-trash"
           severity="danger"
           aria-label="Cancel"
-          onClick={(e) => handleTogglePopUp("add", e, users)}
+          onClick={(e) => handleTogglePopUp("add", e, rowData)}
         />
       </div>
     );
@@ -263,9 +305,25 @@ function Offers() {
     });
   };
 
-  const handleAddUser = ({ name, email, password, role }) => {
-    if (name !== "" && email !== "" && password !== "" && role !== "") {
-      addUser(dialogInputObject)
+  const handleAddOffer = ({
+    name,
+    cap,
+    funnels,
+    geo,
+    offer_start,
+    offer_end,
+    source,
+  }) => {
+    if (
+      (name !== "" &&
+        cap !== "" &&
+        funnels !== "" &&
+        geo !== "" &&
+        offer_start !== "" &&
+        offer_end !== "",
+      source !== "")
+    ) {
+      addOffer(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
           showAcceptToast();
@@ -279,9 +337,25 @@ function Offers() {
     }
   };
 
-  const handleEditUser = ({ name, email, role }) => {
-    if (name !== "" && email !== "" && role !== "") {
-      editUser(dialogInputObject, selectedUserID)
+  const handleEditOffer = ({
+    name,
+    cap,
+    funnels,
+    geo,
+    offer_start,
+    offer_end,
+    source,
+  }) => {
+    if (
+      (name !== "" &&
+        cap !== "" &&
+        funnels !== "" &&
+        geo !== "" &&
+        offer_start !== "" &&
+        offer_end !== "",
+      source !== "")
+    ) {
+      editOffer(dialogInputObject, selectedOfferID)
         .then(function (response) {
           setIsEditDialogVisible(false);
           renderOffers();
@@ -294,9 +368,9 @@ function Offers() {
     }
   };
 
-  const handleDeleteUser = () => {
-    console.log(dialogInputObject, selectedUserID);
-    deleteUser(selectedUserID)
+  const handleDeleteOffer = () => {
+    console.log(dialogInputObject, selectedOfferID);
+    deleteOffer(selectedOfferID)
       .then(function (response) {
         showAcceptToast();
         renderOffers();
@@ -363,7 +437,7 @@ function Offers() {
   const geoTemplate = (object) => {
     const geoArray = JSON.parse(object.geo);
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-wrap max-w-30rem gap-2">
         {geoArray.map((item) => (
           <Chip key={item} label={item} />
         ))}
@@ -382,7 +456,7 @@ function Offers() {
 
   const activityTemplate = (rowData) => {
     const item = activityChecked.find((el) => el.id === rowData.id);
-  
+
     return (
       <InputSwitch
         key={item.id}
@@ -393,7 +467,7 @@ function Offers() {
   };
 
   const handleToggleActivity = (id, value) => {
-    console.log(value)
+    console.log(value);
     const transformedActive = value ? 1 : 0;
     handleEditActivity(id, transformedActive);
     setActivityChecked((prevActivityChecked) =>
@@ -426,7 +500,7 @@ function Offers() {
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
-        handleAdd={handleAddUser}
+        handleAdd={handleAddOffer}
         selectedGeo={selectedGeo}
         geoNames={geoNames}
         setSelectedGeo={setSelectedGeo}
@@ -438,18 +512,37 @@ function Offers() {
         offerEndDate={offerEndDate}
         setOfferEndDate={setOfferEndDate}
         formatCalendarTime={formatCalendarTime}
+        sourcesNames={sourcesNames}
+        setSourcesNames={setSourcesNames}
+        selectedSources={selectedSources}
+        setSelectedSources={setSelectedSources}
       />
 
-      {/* <DialogComponent
+      <DialogComponent
         type="edit"
         isDialogVisible={isEditDialogVisible}
         setIsDialogVisible={setIsEditDialogVisible}
-        header={"Редактировать оффера"}
+        header={"Изменить оффер"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
-        handleEdit={handleEditUser}
-      /> */}
+        handleEdit={handleEditOffer}
+        selectedGeo={selectedGeo}
+        geoNames={geoNames}
+        setSelectedGeo={setSelectedGeo}
+        selectedFunnels={selectedFunnels}
+        funnelsNames={funnelsNames}
+        setSelectedFunnels={setSelectedFunnels}
+        offerStartDate={offerStartDate}
+        setOfferStartDate={setOfferStartDate}
+        offerEndDate={offerEndDate}
+        setOfferEndDate={setOfferEndDate}
+        formatCalendarTime={formatCalendarTime}
+        sourcesNames={sourcesNames}
+        setSourcesNames={setSourcesNames}
+        selectedSources={selectedSources}
+        setSelectedSources={setSelectedSources}
+      />
 
       <div className="flex flex-column align-items-center justify-content-center">
         <div
