@@ -62,7 +62,7 @@ export const DialogComponent = ({
                 <InputText
                   value={dialogInputObject[input.key]}
                   onChange={(e) =>
-                    handleDialogInputChange(input.key, e.value)
+                    handleDialogInputChange(input.key, e.target.value)
                   }
                   style={{ width: "100%" }}
                   placeholder={input.placeholder}
@@ -71,7 +71,7 @@ export const DialogComponent = ({
                 <Dropdown
                   value={dialogInputObject[input.key]}
                   onChange={(e) =>
-                    handleDialogInputChange(input.key, e.value)
+                    handleDialogInputChange(input.key, e.target.value)
                   }
                   options={input.options}
                   optionLabel={firstKey}
@@ -123,8 +123,7 @@ export const DialogComponent = ({
                   onChange={(e) => setSelectedFunnels(e.value)}
                   options={funnelsNames}
                   optionLabel="name"
-                  filter
-                  placeholder="Выберите воронки"
+                  filterplaceholder="Выберите воронки"
                   maxSelectedLabels={3}
                   className="w-full md:w-20rem"
                 />

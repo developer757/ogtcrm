@@ -9,7 +9,7 @@ export const deleteFunnel = (id) =>
 
 export const addFunnel = (funnelName) =>
   axios.post(`http://25.18.88.64:8000/api/funnels/store`, {
-    funnel_name: funnelName,
+    name: funnelName,
   });
 
 export const getUsers = () => axios.get(`http://25.18.88.64:8000/api/users`);

@@ -5,7 +5,6 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { ConfirmPopup, confirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
-import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { FilterMatchMode } from "primereact/api";
 
@@ -190,8 +189,8 @@ function Funnels() {
 
         <DialogComponent
           type="add"
-          isAddDialogVisible={popupCreateVisible}
-          setIsAddDialogVisible={setPopupCreateVisible}
+          isDialogVisible={popupCreateVisible}
+          setIsDialogVisible={setPopupCreateVisible}
           header={"Добавить воронку"}
           dialogInputObject={funnelName}
           setDialogInputObject={setFunnelName}
@@ -214,10 +213,7 @@ function Funnels() {
           filters={filters}
           loading={loading}
           globalFilterFields={[
-            "funnel_name",
-            "country.name",
-            "representative.name",
-            "status",
+            "name",
           ]}
           header={renderHeader()}
           emptyMessage="Воронка не найдена."
