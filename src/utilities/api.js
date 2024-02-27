@@ -40,14 +40,14 @@ export const deleteDomain = (id) =>
 
 export const addDomain = (domain) =>
   axios.post(`http://25.18.88.64:8000/api/domains/store`, {
-    domain_name: domain.name,
-    user_name: domain.user,
+    domain: domain.name,
+    name: domain.user,
   });
 
 export const editDomain = (domain, id) =>
   axios.put(`http://25.18.88.64:8000/api/domains/update/${id}`, {
-    domain_name: domain.name,
-    user_name: domain.user,
+    domain: domain.name,
+    name: domain.user,
   });
 
 export const getSpends = () => axios.get(`http://25.18.88.64:8000/api/spends`);
@@ -71,7 +71,8 @@ export const editSpends = (dialogInputObject, id) =>
 
 export const getOffers = () => axios.get(`http://25.18.88.64:8000/api/offers`);
 
-export const getCountries = () => axios.get(`http://25.18.88.64:8000/api/country`);
+export const getCountries = () =>
+  axios.get(`http://25.18.88.64:8000/api/country`);
 
 export const editActivity = (id, active) =>
   axios.put(`http://25.18.88.64:8000/api/offers/activity`, {

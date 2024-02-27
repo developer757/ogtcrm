@@ -91,7 +91,7 @@ function Domains() {
       .then((response) => {
         const renamedData = response.data.map((item) => ({
           ...item,
-          name: item.user_name,
+          name: item.name,
         }));
         setDomains(renamedData);
         setLoading(false);
@@ -254,7 +254,7 @@ function Domains() {
 
     return (
       <div className="flex align-items-center gap-2">
-        <span>{rowData.user_name}</span>
+        <span>{rowData.name}</span>
       </div>
     );
   };
@@ -334,8 +334,8 @@ function Domains() {
           filters={filters}
           loading={loading}
           globalFilterFields={[
-            "domain_name",
-            "user_name",
+            "domain",
+            "name",
             "representative.name",
             "status",
           ]}
@@ -348,7 +348,7 @@ function Domains() {
             sortable
             style={{ width: "20%" }}
           ></Column>
-          <Column field="domain_name" header="Домен"></Column>
+          <Column field="domain" header="Домен"></Column>
           <Column
             field="name"
             header="Пользователь"
