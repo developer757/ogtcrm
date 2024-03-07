@@ -12,12 +12,10 @@ import { DialogComponent } from "../../components/DialogComponent";
 
 import { getSources, deleteSource, addSource } from "../../utilities/api";
 
-
 function Sources() {
   const [sources, setSources] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
   const [sourceName, setSourceName] = useState({ name: "" });
-  const [toastMessage, setToastMessage] = useState("");
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -38,15 +36,17 @@ function Sources() {
 
   const toast = useRef(null);
 
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
+
   useEffect(() => {
     renderSources();
   }, []);
-
-  useEffect(() => {
-    if (toastMessage) {
-      showToast("success");
-    }
-  }, [toastMessage]);
 
   const renderSources = () => {
     getSources()
@@ -56,7 +56,7 @@ function Sources() {
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage("Ошибка при загрузке источников");
+        showToast("error", "Ошибка при загрузке источников");
       });
   };
 
@@ -68,14 +68,6 @@ function Sources() {
 
     setFilters(_filters);
     setGlobalFilterValue(value);
-  };
-
-  const showToast = (severity) => {
-    toast.current.show({
-      severity: severity,
-      detail: toastMessage,
-      life: 3000,
-    });
   };
 
   const confirmDeleteSource = (event, rowData) => {
@@ -92,19 +84,19 @@ function Sources() {
   };
 
   const rejectDeletion = () => {
-    setToastMessage("Удаление источника отменено");
+    showToast("info", "Удаление источника отменено");
   };
 
   const deleteSelectedSource = () => {
     if (currentRowData) {
       deleteSource(currentRowData.id)
         .then(function (response) {
-          setToastMessage(response.data.message);
+          showToast("success", "Удаление источника успешно");
           renderSources();
         })
         .catch(function (error) {
           console.log(error);
-          setToastMessage("Ошибка удаления источника");
+          showToast("error", "Ошибка удаления источника");
         });
     }
   };
@@ -112,13 +104,13 @@ function Sources() {
   const addNewSource = () => {
     addSource(sourceName.name)
       .then(function (response) {
-        setToastMessage(response.data.message);
+        showToast("success", "Добавление источника успешно");
         setPopupCreateVisible(false);
         setSourceName({ name: "" });
         renderSources();
       })
       .catch(function (error) {
-        setToastMessage("Ошибка при добавлении источника");
+        showToast("error", "Ошибка при добавлении источника");
         setSourceName({ name: "" });
       });
   };

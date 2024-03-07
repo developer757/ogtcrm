@@ -15,7 +15,6 @@ function Funnels() {
   const [funnels, setFunnels] = useState([]);
   const [popupCreateVisible, setPopupCreateVisible] = useState(false);
   const [funnelName, setFunnelName] = useState({ name: "" });
-  const [toastMessage, setToastMessage] = useState("");
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -36,15 +35,18 @@ function Funnels() {
 
   const toast = useRef(null);
 
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
+
   useEffect(() => {
     renderFunnels();
   }, []);
 
-  useEffect(() => {
-    if (toastMessage) {
-      showToast("success");
-    }
-  }, [toastMessage]);
 
   const renderFunnels = () => {
     getFunnels()
@@ -54,7 +56,7 @@ function Funnels() {
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage("Ошибка при загрузке воронок");
+        showToast("error", "Ошибка при загрузке воронок");
       });
   };
 
@@ -66,14 +68,6 @@ function Funnels() {
 
     setFilters(_filters);
     setGlobalFilterValue(value);
-  };
-
-  const showToast = (severity) => {
-    toast.current.show({
-      severity: severity,
-      detail: toastMessage,
-      life: 3000,
-    });
   };
 
   const confirmDeleteFunnel = (event, rowData) => {
@@ -90,19 +84,19 @@ function Funnels() {
   };
 
   const rejectDeletion = () => {
-    setToastMessage("Удаление воронки отменено");
+    showToast("info", "Удаление воронки отменено");
   };
 
   const deleteSelectedFunnel = () => {
     if (currentRowData) {
       deleteFunnel(currentRowData.id)
         .then(function (response) {
-          setToastMessage(response.data.message);
+          showToast("success", "Воронка успешно удалена");
           renderFunnels();
         })
         .catch(function (error) {
           console.log(error);
-          setToastMessage("Ошибка удаления воронки");
+          showToast('error',"Ошибка удаления воронки");
         });
     }
   };
@@ -110,13 +104,13 @@ function Funnels() {
   const addNewFunnel = () => {
     addFunnel(funnelName.name)
       .then(function (response) {
-        setToastMessage(response.data.message);
+        showToast("success", "Воронка создана успешно");
         setPopupCreateVisible(false);
         setFunnelName({ name: "" });
         renderFunnels();
       })
       .catch(function (error) {
-        setToastMessage("Ошибка при добавлении воронки");
+        showToast('error',"Ошибка создания воронки");
         setFunnelName({ name: "" });
       });
   };
@@ -212,9 +206,7 @@ function Funnels() {
           dataKey="id"
           filters={filters}
           loading={loading}
-          globalFilterFields={[
-            "name",
-          ]}
+          globalFilterFields={["name"]}
           header={renderHeader()}
           emptyMessage="Воронка не найдена."
         >

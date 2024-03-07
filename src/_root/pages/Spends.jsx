@@ -36,6 +36,14 @@ function Spends() {
 
   const toast = useRef(null);
 
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
+
   const addDialogInputs = [
     {
       label: "Имя",
@@ -81,6 +89,7 @@ function Spends() {
       options: dialogNames,
     },
   ];
+
   useEffect(() => {
     console.log(dialogInputObject);
   }, [dialogInputObject]);
@@ -190,21 +199,12 @@ function Spends() {
   const header = renderHeader();
 
   const showAcceptToast = () => {
-    toast.current.show({
-      severity: "info",
-      summary: "До связи",
-      detail: "Удаление расхода успешно",
-      life: 3000,
-    });
+    showToast("success", "Расход успешно удалён");
+
   };
 
   const showRejectToast = () => {
-    toast.current.show({
-      severity: "success",
-      summary: "На связи",
-      detail: "Удаление расхода отклонено",
-      life: 3000,
-    });
+    showToast("info", "Удаление расхода отменено");
   };
 
   const handleAddSpend = ({ name, summary, date }) => {
@@ -212,15 +212,17 @@ function Spends() {
       addSpend(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
-          showAcceptToast();
+          showToast("success", "Расход успешно добавлен");
           renderSpends();
           clearDialogInputObject();
         })
         .catch(function (error) {
-          console.log(error);
+          console.log(error);э
+          showToast("error", "Ошибка добавления расхода");
         });
     } else {
       console.log("Fill all fields");
+      showToast("info", "Заполните все поля");
     }
   };
 
@@ -228,14 +230,17 @@ function Spends() {
     if (name !== "" && summary !== "" && date !== "") {
       editSpend(dialogInputObject, selectedSpendID)
         .then(function (response) {
+          showToast("success", "Расход успешно редактирован");
           setIsEditDialogVisible(false);
           renderSpends();
         })
         .catch(function (error) {
           console.log(error);
+          showToast("error", "Ошибка редактирования расхода");
         });
     } else {
       console.log("Fill all fields");
+      showToast("info", "Заполните все поля");
     }
   };
 
@@ -243,11 +248,12 @@ function Spends() {
     console.log(dialogInputObject, selectedSpendID);
     deleteSpend(selectedSpendID)
       .then(function (response) {
-        showAcceptToast();
+        showToast("success", "Расход успешно удалён");
         renderSpends();
       })
       .catch(function (error) {
         console.log(error);
+        showToast("error", "Ошибка удаления расхода");
       });
   };
 
@@ -278,6 +284,16 @@ function Spends() {
       <div className="border-round p-3">
         <span>{message}</span>
         <div className="flex align-items-center gap-2 mt-3">
+        <Button
+            ref={acceptBtnRef}
+            outlined
+            label="Да"
+            severity="danger"
+            onClick={() => {
+              handleConfirmPopUpButtonClick("accept", hide);
+            }}
+            className="p-button-sm p-button-outlined p-button-danger"
+            ></Button>
           <Button
             ref={rejectBtnRef}
             label="Отменить"
@@ -286,18 +302,9 @@ function Spends() {
             onClick={() => {
               handleConfirmPopUpButtonClick("reject", hide);
             }}
-            className="p-button-sm w-full"
-          />
-          <Button
-            ref={acceptBtnRef}
-            outlined
-            label="Удалить"
-            severity="danger"
-            onClick={() => {
-              handleConfirmPopUpButtonClick("accept", hide);
-            }}
-            className="p-button-sm w-full"
-          ></Button>
+            className="p-button-sm p-button-text"
+            />
+
         </div>
       </div>
     );

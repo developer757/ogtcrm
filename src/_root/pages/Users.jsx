@@ -30,6 +30,14 @@ function Users() {
 
   const toast = useRef(null);
 
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
+
   const addDialogInputs = [
     {
       label: "Имя",
@@ -87,7 +95,7 @@ function Users() {
   const renderUsers = () => {
     getUsers().then(function (response) {
       setUsers(response.data);
-      console.log(response.data)
+      console.log(response.data);
     });
   };
 
@@ -107,8 +115,8 @@ function Users() {
   };
 
   useEffect(() => {
-    console.log(selectedUserID)
-  }, [selectedUserID])
+    console.log(selectedUserID);
+  }, [selectedUserID]);
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     if (option === "accept") {
@@ -163,24 +171,15 @@ function Users() {
       </div>
     );
   };
+
   const header = renderHeader();
 
   const showAcceptToast = () => {
-    toast.current.show({
-      severity: "info",
-      summary: "До связи",
-      detail: "Удаление пользователя успешно",
-      life: 3000,
-    });
+    showToast("success", "Пользователь успешно удалён");
   };
 
   const showRejectToast = () => {
-    toast.current.show({
-      severity: "success",
-      summary: "На связи",
-      detail: "Удаление пользователя отклонено",
-      life: 3000,
-    });
+    showToast("info", "Удаление пользователя отменено");
   };
 
   const handleAddUser = ({ name, email, password, role }) => {
@@ -188,14 +187,15 @@ function Users() {
       addUser(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
-          showAcceptToast()
+          showToast("success", "Пользователь успешно добавлен");
           renderUsers();
         })
         .catch(function (error) {
-          console.log(error);
+          showToast("error", "Ошибка добавления пользователя");
         });
     } else {
       console.log("Fill all fields");
+      showToast("info", "Заполните все поля");
     }
   };
 
@@ -203,14 +203,17 @@ function Users() {
     if (name !== "" && email !== "" && role !== "") {
       editUser(dialogInputObject, selectedUserID)
         .then(function (response) {
+          showToast("success", "Пользователь успешно редактирован");
           setIsEditDialogVisible(false);
           renderUsers();
         })
         .catch(function (error) {
           console.log(error);
+          showToast("error", "Ошибка редактирования пользователя");
         });
     } else {
       console.log("Fill all fields");
+      showToast("info", "Заполните все поля");
     }
   };
 
@@ -218,11 +221,12 @@ function Users() {
     console.log(dialogInputObject, selectedUserID);
     deleteUser(selectedUserID)
       .then(function (response) {
-        showAcceptToast();
+        showToast("success", "Пользователь успешно удален");
         renderUsers();
       })
       .catch(function (error) {
         console.log(error);
+        showToast("error", "Ошибка удаления пользователя");
       });
   };
 
@@ -245,6 +249,16 @@ function Users() {
         <span>{message}</span>
         <div className="flex align-items-center gap-2 mt-3">
           <Button
+            ref={acceptBtnRef}
+            outlined
+            label="Да"
+            severity="danger"
+            onClick={() => {
+              handleConfirmPopUpButtonClick("accept", hide);
+            }}
+            className="p-button-sm p-button-outlined p-button-danger"
+          ></Button>
+          <Button
             ref={rejectBtnRef}
             label="Отменить"
             outlined
@@ -252,18 +266,8 @@ function Users() {
             onClick={() => {
               handleConfirmPopUpButtonClick("reject", hide);
             }}
-            className="p-button-sm w-full"
+            className="p-button-sm p-button-text"
           />
-          <Button
-            ref={acceptBtnRef}
-            outlined
-            label="Удалить"
-            severity="danger"
-            onClick={() => {
-              handleConfirmPopUpButtonClick("accept", hide);
-            }}
-            className="p-button-sm w-full"
-          ></Button>
         </div>
       </div>
     );

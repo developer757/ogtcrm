@@ -20,11 +20,9 @@ import { DialogComponent } from "../../components/DialogComponent";
 
 function Domains() {
   const [domains, setDomains] = useState([]);
-
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [users, setUsers] = useState([]);
-  const [toastMessage, setToastMessage] = useState({ text: "", severity: "" });
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -39,7 +37,14 @@ function Domains() {
   });
 
   const toast = useRef(null);
-  const isMounting = useRef(true);
+
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
 
   const inputs = [
     {
@@ -69,22 +74,9 @@ function Domains() {
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage({
-          text: "Ошибка при загрузке доменов",
-          severity: "error",
-        });
+        showToast("error", "Ошибка при загрузке пользователей");
       });
   }, []);
-
-  useEffect(() => {
-    if (!isMounting.current) {
-      if (toastMessage) {
-        showToast();
-      }
-    } else {
-      isMounting.current = false;
-    }
-  }, [toastMessage]);
 
   const renderDomains = () => {
     getDomains()
@@ -98,10 +90,7 @@ function Domains() {
       })
       .catch((error) => {
         console.log(error);
-        setToastMessage({
-          text: "Ошибка при загрузке доменов",
-          severity: "error",
-        });
+        showToast("error", "Ошибка при загрузке доменов");
       });
   };
 
@@ -113,14 +102,6 @@ function Domains() {
 
     setFilters(_filters);
     setGlobalFilterValue(value);
-  };
-
-  const showToast = () => {
-    toast.current.show({
-      severity: toastMessage.severity,
-      detail: toastMessage.text,
-      life: 3000,
-    });
   };
 
   const confirmDeleteDomain = (event, rowData) => {
@@ -137,22 +118,19 @@ function Domains() {
   };
 
   const rejectDeletion = () => {
-    setToastMessage({ text: "Удаление домена отменено", severity: "info" });
+    showToast("info", "Удаление домена отменено");
   };
 
   const deleteSelectedDomain = () => {
     if (currentRowData) {
       deleteDomain(currentRowData.id)
         .then(function (response) {
-          setToastMessage({ text: response.data.message, severity: "success" });
+          showToast("success", "Домен успешно удалён");
           renderDomains();
         })
         .catch(function (error) {
           console.log(error);
-          setToastMessage({
-            text: "Ошибка удаления домена",
-            severity: "error",
-          });
+          showToast("error", "Ошибка удаления домена");
         });
     }
   };
@@ -160,17 +138,14 @@ function Domains() {
   const addNewDomain = () => {
     addDomain(dialogInputObject)
       .then(function (response) {
-        setToastMessage({ text: response.data.message, severity: "success" });
+        showToast("success", "Домен успешно добавлен");
         setIsAddDialogVisible(false);
         setDialogInputObject({});
         renderDomains();
       })
       .catch(function (error) {
         console.log(error);
-        setToastMessage({
-          text: "Ошибка добавления домена",
-          severity: "error",
-        });
+        showToast("error", "Ошибка добавления домена");
       });
   };
 
@@ -179,24 +154,21 @@ function Domains() {
     setCurrentRowData(domains.id);
     setIsEditDialogVisible(true);
     setDialogInputObject({
-      name: domains.domain_name,
-      user: domains.user_name,
+      name: domains.domain,
+      user: domains.name,
     });
   };
 
   const editCurrentDomain = () => {
     editDomain(dialogInputObject, currentRowData)
       .then(function (response) {
-        setToastMessage({ text: response.data.message, severity: "success" });
+        showToast("success", "Домен успешно изменён");
         setIsEditDialogVisible(false);
         setDialogInputObject({});
         renderDomains();
       })
       .catch(function (error) {
-        setToastMessage({
-          text: "Ошибка при редактировании домена",
-          severity: "error",
-        });
+        showToast("error", "Ошибка редактирования домена");
       });
   };
 

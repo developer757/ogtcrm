@@ -1,6 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 
-import { Domains, Funnels, Users, Spends, Offers, Sources } from "./_root/pages";
+import {
+  Domains,
+  Funnels,
+  Users,
+  Spends,
+  Offers,
+  Sources,
+  Statisctics,
+} from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
 function App() {
@@ -16,6 +24,7 @@ function App() {
           <Route path="/spends" element={<Spends />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="/sources" element={<Sources />} />
+          <Route path="/sources" element={<Statisctics />} />
         </Route>
       </Routes>
     </>
