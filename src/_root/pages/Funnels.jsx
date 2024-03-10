@@ -28,7 +28,7 @@ function Funnels() {
       label: "Воронка",
       key: "name",
       type: "text",
-      placeholder: "название воронки",
+      placeholder: "Название воронки",
       options: [],
     },
   ];

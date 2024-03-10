@@ -20,19 +20,13 @@ export const DialogComponent = ({
   setDate,
   formatCalendarDate,
   formatCalendarTime,
-  selectedGeo,
   geoNames,
   setSelectedGeo,
-  selectedFunnels,
   funnelsNames,
   setSelectedFunnels,
-  offerStartDate,
-  setOfferStartDate,
-  offerEndDate,
-  setOfferEndDate,
   sourcesNames,
   setSelectedSources,
-  selectedSources
+  dispatch,
 }) => {
   const handleDialogInputChange = (field, value) => {
     setDialogInputObject((prevState) => ({
@@ -41,12 +35,20 @@ export const DialogComponent = ({
     }));
     console.log(field, value);
   };
+  console.log("setIsDialogVisible", setIsDialogVisible);
 
   return (
     <Dialog
       header={header}
       visible={isDialogVisible}
-      onHide={() => setIsDialogVisible(false)}
+      onHide={() => {
+        if (dispatch) {
+          dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: false });
+          dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: false });
+        } else {
+          setIsDialogVisible(false);
+        }
+      }}
       className="w-full max-w-25rem min-w-25rem"
     >
       <div className="flex flex-column gap-4 mt-2">
@@ -93,11 +95,13 @@ export const DialogComponent = ({
                 />
               ) : input.type === "calendar offerstart" ? (
                 <Calendar
-                  value={offerStartDate}
+                  value={formatCalendarTime(
+                    dialogInputObject[input.key],
+                    "to Date"
+                  )}
                   timeOnly
                   placeholder="00:00"
                   onChange={(e) => {
-                    setOfferStartDate(e.value);
                     handleDialogInputChange(
                       input.key,
                       formatCalendarTime(e.value, "to string")
@@ -107,11 +111,13 @@ export const DialogComponent = ({
                 />
               ) : input.type === "calendar offerend" ? (
                 <Calendar
-                  value={offerEndDate}
+                  value={formatCalendarTime(
+                    dialogInputObject[input.key],
+                    "to Date"
+                  )}
                   timeOnly
                   placeholder="24:00"
                   onChange={(e) => {
-                    setOfferEndDate(e.value);
                     handleDialogInputChange(
                       input.key,
                       formatCalendarTime(e.value, "to string")

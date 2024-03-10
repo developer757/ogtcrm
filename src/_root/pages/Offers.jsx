@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useReducer } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -22,21 +22,14 @@ import { Chip } from "primereact/chip";
 import { InputSwitch } from "primereact/inputswitch";
 
 function Offers() {
-  const [offers, setOffers] = useState(null);
-  const [selectedOfferID, setSelectedOfferID] = useState(null);
-  const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
-  const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [funnelsNames, setFunnelsNames] = useState([]);
   const [geoNames, setGeoNames] = useState([]);
   const [selectedFunnels, setSelectedFunnels] = useState(null);
   const [selectedGeo, setSelectedGeo] = useState(null);
-  const [offerStartDate, setOfferStartDate] = useState(null);
-  const [offerEndDate, setOfferEndDate] = useState(null);
   const [activityChecked, setActivityChecked] = useState([]);
   const [sourcesNames, setSourcesNames] = useState([]);
   const [selectedSources, setSelectedSources] = useState(null);
-
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
@@ -48,6 +41,37 @@ function Offers() {
     offer_start: "",
     offer_end: "",
     source: [],
+  });
+
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case "SET_OFFERS":
+        return {
+          ...state,
+          offers: action.payload,
+        };
+      case "SET_SELECTED_OFFER_ID":
+        return {
+          ...state,
+          selectedOfferID: action.payload,
+        };
+      case "SET_IS_ADD_DIALOG_VISIBLE":
+        return {
+          ...state,
+          isAddDialogVisible: action.payload,
+        };
+      case "SET_IS_EDIT_DIALOG_VISIBLE":
+        return {
+          ...state,
+          isEditDialogVisible: action.payload,
+        };
+    }
+  };
+  const [state, dispatch] = useReducer(reducer, {
+    offers: null,
+    selectedOfferID: null,
+    isAddDialogVisible: false,
+    isEditDialogVisible: false,
   });
 
   const toast = useRef(null);
@@ -147,20 +171,12 @@ function Offers() {
   ];
 
   useEffect(() => {
-    // console.log(offers);
-    // console.log(geoNames);
-    // console.log(funnelsNames);
-    // console.log(selectedFunnels);
-    // console.log(selectedGeo);
-    // console.log(selectedOfferID);
-    // console.log(sourcesNames);
-    // console.log(activityChecked);
-    // console.log(offers);
-  });
+    console.log("dialogInputObject: ", dialogInputObject);
+  }, [dialogInputObject]);
 
   useEffect(() => {
-    console.log(dialogInputObject);
-  }, [dialogInputObject]);
+    console.log("state: ", state);
+  }, [state]);
 
   useEffect(() => {
     renderOffers();
@@ -188,77 +204,70 @@ function Offers() {
         });
       });
 
-      setOffers(response.data);
+      const updatedOffersData = response.data.map((obj) => {
+        if (obj.hasOwnProperty("offer_start")) {
+          obj.offer_start = obj.offer_start.slice(0, -3);
+        }
+        if (obj.hasOwnProperty("offer_end")) {
+          obj.offer_end = obj.offer_end.slice(0, -3);
+        }
+
+        return obj;
+      });
+      dispatch({ type: "SET_OFFERS", payload: updatedOffersData });
       setActivityChecked(offerActiveArray);
     });
   };
 
-  const handleTogglePopUp = (option, e, rowData) => {
-    console.log(rowData);
-    if (option === "add") {
-      showPopUp(e);
-    } else {
-      setDialogInputObject({
-        name: rowData.name,
-        cap: rowData.cap,
-        funnels: JSON.parse(rowData.funnels),
-        geo: JSON.parse(rowData.geo),
-        offer_start: rowData.start,
-        offer_end: rowData.end,
-        source: JSON.parse(rowData.source),
-      });
-      setIsEditDialogVisible(true);
-    }
-    setSelectedOfferID(rowData.id);
+  const handleEditActionClick = (rowData) => {
+    console.log("rowData: ", rowData);
+
+    setDialogInputObject({
+      name: rowData.name,
+      cap: rowData.cap,
+      funnels: JSON.parse(rowData.funnels),
+      geo: JSON.parse(rowData.geo),
+      offer_start: rowData.offer_start,
+      offer_end: rowData.offer_end,
+      source: JSON.parse(rowData.source),
+    });
+
+    dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: true });
+    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: rowData.id });
   };
 
-  useEffect(() => {
-    console.log(selectedOfferID);
-  }, [selectedOfferID]);
+  const handleDeleteActionClick = (e, rowData) => {
+    showConfirmDeletePopUp(e);
+    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: rowData.id });
+  };
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
-    if (option === "accept") {
-      handleDeleteOffer(selectedOfferID);
-    } else {
-      showRejectToast();
-    }
-    hide();
-    setSelectedOfferID(null);
+    option === "delete"
+      ? handleDeleteOffer(state.selectedOfferID)
+      : showToast("info", "Удаление оффера отменено"),
+      hide();
+    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: null });
   };
 
   const formatCalendarTime = (timestamp, option) => {
-    if (option === "to string") {
-      const hours = timestamp.getHours().toString().padStart(2, "0");
-      const minutes = timestamp.getMinutes().toString().padStart(2, "0");
+    if (timestamp) {
+      if (option === "to string") {
+        const hours = timestamp.getHours().toString().padStart(2, "0");
+        const minutes = timestamp.getMinutes().toString().padStart(2, "0");
 
-      const formattedTime = `${hours}:${minutes}`;
-      return formattedTime;
-    } else {
-      const dateString = timestamp;
-      const [year, month, day] = dateString.split("-");
-      const formattedDate = new Date(year, month - 1, day);
+        const formattedTime = `${hours}:${minutes}`;
+        return formattedTime;
+      } else if (option === "to Date") {
+        let formattedTime = new Date();
 
-      return formattedDate;
+        let [hours, minutes] = timestamp.split(":");
+
+        formattedTime.setHours(parseInt(hours, 10));
+        formattedTime.setMinutes(parseInt(minutes, 10));
+        return formattedTime;
+      }
     }
-  };
-
-  const actionButtonsTemplate = (rowData) => {
-    return (
-      <div className="flex gap-3">
-        <Button
-          icon="pi pi-pencil"
-          severity="success"
-          aria-label="Search"
-          onClick={(e) => handleTogglePopUp("edit", e, rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          severity="danger"
-          aria-label="Cancel"
-          onClick={(e) => handleTogglePopUp("add", e, rowData)}
-        />
-      </div>
-    );
+    return;
   };
 
   const onGlobalFilterChange = (e) => {
@@ -271,37 +280,11 @@ function Offers() {
     setGlobalFilterValue(value);
   };
 
-  const renderHeader = () => {
-    return (
-      <div className="flex justify-content-end">
-        <span className="p-input-icon-left">
-          <i className="pi pi-search" />
-          <InputText
-            value={globalFilterValue}
-            onChange={onGlobalFilterChange}
-            placeholder="Поиск"
-          />
-        </span>
-      </div>
-    );
-  };
-  const header = renderHeader();
-
-  const showAcceptToast = () => {
+  const showToast = (severity, text) => {
     toast.current.show({
-      severity: "info",
-      summary: "До связи",
-      detail: "Удаление пользователя успешно",
-      life: 3000,
-    });
-  };
-
-  const showRejectToast = () => {
-    toast.current.show({
-      severity: "success",
-      summary: "На связи",
-      detail: "Удаление пользователя отклонено",
-      life: 3000,
+      severity: severity,
+      detail: text,
+      life: 2000,
     });
   };
 
@@ -325,15 +308,16 @@ function Offers() {
     ) {
       addOffer(dialogInputObject)
         .then(function (response) {
-          setIsAddDialogVisible(false);
-          showAcceptToast();
+          dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: false });
+          showToast("success", "Добавление оффера успешно");
           renderOffers();
         })
         .catch(function (error) {
           console.log(error);
+          showToast("success", "Ошибка при добавлении оффера");
         });
     } else {
-      console.log("Fill all fields");
+      console.log("Заполните все поля");
     }
   };
 
@@ -355,45 +339,83 @@ function Offers() {
         offer_end !== "",
       source !== "")
     ) {
-      editOffer(dialogInputObject, selectedOfferID)
+      editOffer(dialogInputObject, state.selectedOfferID)
         .then(function (response) {
-          setIsEditDialogVisible(false);
+          showToast("success", "Редактирование оффера успешно");
+          dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: false });
           renderOffers();
         })
         .catch(function (error) {
           console.log(error);
+          showToast("error", "Ошибка при редактирования оффера");
         });
     } else {
-      console.log("Fill all fields");
+      console.log("Заполните все поля");
     }
   };
 
   const handleDeleteOffer = () => {
-    console.log(dialogInputObject, selectedOfferID);
-    deleteOffer(selectedOfferID)
+    deleteOffer(state.selectedOfferID)
       .then(function (response) {
-        showAcceptToast();
+        console.log(response);
+        showToast("success", "Удаление оффера успешно");
         renderOffers();
       })
       .catch(function (error) {
+        showToast("error", "Ошибка при удалении оффера");
         console.log(error);
       });
   };
 
-  const showPopUp = (e) => {
+  const showConfirmDeletePopUp = (e) => {
     confirmPopup({
       group: "headless",
       target: e.currentTarget,
-      message: "Вы точно хотите удалить пользователя?",
+      message: "Вы точно хотите удалить оффер?",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
-      accept: showAcceptToast,
-      reject: showRejectToast,
     });
   };
 
-  const popUpContent = ({ message, acceptBtnRef, rejectBtnRef, hide }) => {
+  const actionButtonsTemplate = (rowData) => {
+    return (
+      <div className="flex gap-3">
+        <Button
+          icon="pi pi-pencil"
+          severity="success"
+          onClick={(e) => handleEditActionClick(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          severity="danger"
+          onClick={(e) => handleDeleteActionClick(e, rowData)}
+        />
+      </div>
+    );
+  };
+
+  const headerTemplate = () => {
+    return (
+      <div className="flex justify-content-end">
+        <span className="p-input-icon-left">
+          <i className="pi pi-search" />
+          <InputText
+            value={globalFilterValue}
+            onChange={onGlobalFilterChange}
+            placeholder="Поиск"
+          />
+        </span>
+      </div>
+    );
+  };
+
+  const popUpContentTemplate = ({
+    message,
+    acceptBtnRef,
+    rejectBtnRef,
+    hide,
+  }) => {
     return (
       <div className="border-round p-3">
         <span>{message}</span>
@@ -414,7 +436,7 @@ function Offers() {
             label="Удалить"
             severity="danger"
             onClick={() => {
-              handleConfirmPopUpButtonClick("accept", hide);
+              handleConfirmPopUpButtonClick("delete", hide);
             }}
             className="p-button-sm w-full"
           ></Button>
@@ -445,11 +467,10 @@ function Offers() {
     );
   };
 
-  const capTimeTemplate = (object) => {
+  const capTimeTemplate = (obj) => {
     return (
       <div className="flex flex-column">
-        {object["offer_start"].slice(0, -3)} -{" "}
-        {object["offer_end"].slice(0, -3)}
+        {obj["offer_start"]} - {obj["offer_end"]}
       </div>
     );
   };
@@ -490,12 +511,11 @@ function Offers() {
   return (
     <>
       <Toast ref={toast} />
-      <ConfirmPopup group="headless" content={popUpContent} />
+      <ConfirmPopup group="headless" content={popUpContentTemplate} />
 
       <DialogComponent
         type="add"
-        isDialogVisible={isAddDialogVisible}
-        setIsDialogVisible={setIsAddDialogVisible}
+        isDialogVisible={state.isAddDialogVisible}
         header={"Добавить оффер"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
@@ -507,21 +527,17 @@ function Offers() {
         selectedFunnels={selectedFunnels}
         funnelsNames={funnelsNames}
         setSelectedFunnels={setSelectedFunnels}
-        offerStartDate={offerStartDate}
-        setOfferStartDate={setOfferStartDate}
-        offerEndDate={offerEndDate}
-        setOfferEndDate={setOfferEndDate}
         formatCalendarTime={formatCalendarTime}
         sourcesNames={sourcesNames}
         setSourcesNames={setSourcesNames}
         selectedSources={selectedSources}
         setSelectedSources={setSelectedSources}
+        dispatch={dispatch}
       />
 
       <DialogComponent
         type="edit"
-        isDialogVisible={isEditDialogVisible}
-        setIsDialogVisible={setIsEditDialogVisible}
+        isDialogVisible={state.isEditDialogVisible}
         header={"Изменить оффер"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
@@ -533,15 +549,12 @@ function Offers() {
         selectedFunnels={selectedFunnels}
         funnelsNames={funnelsNames}
         setSelectedFunnels={setSelectedFunnels}
-        offerStartDate={offerStartDate}
-        setOfferStartDate={setOfferStartDate}
-        offerEndDate={offerEndDate}
-        setOfferEndDate={setOfferEndDate}
         formatCalendarTime={formatCalendarTime}
         sourcesNames={sourcesNames}
         setSourcesNames={setSourcesNames}
         selectedSources={selectedSources}
         setSelectedSources={setSelectedSources}
+        dispatch={dispatch}
       />
 
       <div className="flex flex-column align-items-center justify-content-center">
@@ -553,13 +566,15 @@ function Offers() {
           <Button
             label="Добавить"
             icon="pi pi-plus"
-            onClick={() => setIsAddDialogVisible(true)}
+            onClick={() =>
+              dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: true })
+            }
           />
         </div>
         <DataTable
-          value={offers}
+          value={state.offers}
           paginator
-          header={header}
+          header={headerTemplate}
           rows={10}
           stripedRows
           showGridlines

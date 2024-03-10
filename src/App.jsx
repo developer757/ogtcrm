@@ -7,7 +7,7 @@ import {
   Spends,
   Offers,
   Sources,
-  Statisctics,
+  Statistics,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
@@ -24,7 +24,7 @@ function App() {
           <Route path="/spends" element={<Spends />} />
           <Route path="/offers" element={<Offers />} />
           <Route path="/sources" element={<Sources />} />
-          <Route path="/sources" element={<Statisctics />} />
+          <Route path="/statistics" element={<Statistics />} />
         </Route>
       </Routes>
     </>
