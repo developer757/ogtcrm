@@ -29,7 +29,7 @@ function Sources() {
       label: "Источник",
       key: "name",
       type: "text",
-      placeholder: "название источника",
+      placeholder: "Название источника",
       options: [],
     },
   ];

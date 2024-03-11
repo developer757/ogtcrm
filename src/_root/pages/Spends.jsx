@@ -18,13 +18,11 @@ import { DialogComponent } from "../../components/DialogComponent";
 
 function Spends() {
   const [spends, setSpends] = useState(null);
-  const [users, setUsers] = useState(null);
   const [selectedSpendID, setSelectedSpendID] = useState(null);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [dialogNames, setDialogNames] = useState([]);
-  const [date, setDate] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
@@ -90,15 +88,6 @@ function Spends() {
     },
   ];
 
-  useEffect(() => {
-    console.log(dialogInputObject);
-  }, [dialogInputObject]);
-
-  useEffect(() => {
-    console.log(dialogNames);
-    console.log(users);
-  }, [dialogNames, users]);
-
   const getFilteredUsers = (array) => {
     return array.map((obj) => {
       const { name } = obj;
@@ -108,7 +97,6 @@ function Spends() {
 
   useEffect(() => {
     getUsers().then((response) => {
-      setUsers(response.data);
       setDialogNames(getFilteredUsers(response.data));
     });
     console.log(dialogNames);
@@ -122,33 +110,25 @@ function Spends() {
     });
   };
 
-  const handleTogglePopUp = (option, e, spends) => {
+  const handleTogglePopUp = (option, e, rowData) => {
+    console.log(rowData);
     if (option === "add") {
-      showPopUp(e);
+      showConfirmDeletePopUp(e);
     } else {
-      console.log(spends);
-
       setDialogInputObject({
-        name: spends.name,
-        summary: spends.summary,
-        date: formatCalendarDate(spends.date),
+        name: rowData.name,
+        summary: rowData.summary,
+        date: rowData.date,
       });
       setIsEditDialogVisible(true);
-      console.log(formatCalendarDate(spends.date, "to timestamp"));
     }
-    setSelectedSpendID(spends.id);
+    setSelectedSpendID(rowData.id);
   };
 
-  useEffect(() => {
-    console.log(selectedSpendID);
-  }, [selectedSpendID]);
-
   const handleConfirmPopUpButtonClick = (option, hide) => {
-    if (option === "accept") {
-      handleDeleteSpend(selectedSpendID);
-    } else {
-      showRejectToast();
-    }
+    option === "delete"
+      ? handleDeleteSpend(selectedSpendID)
+      : showRejectToast();
     hide();
     setSelectedSpendID(null);
   };
@@ -182,7 +162,7 @@ function Spends() {
     setGlobalFilterValue(value);
   };
 
-  const renderHeader = () => {
+  const headerTemplate = () => {
     return (
       <div className="flex justify-content-end">
         <span className="p-input-icon-left">
@@ -196,11 +176,9 @@ function Spends() {
       </div>
     );
   };
-  const header = renderHeader();
 
   const showAcceptToast = () => {
     showToast("success", "Расход успешно удалён");
-
   };
 
   const showRejectToast = () => {
@@ -217,7 +195,8 @@ function Spends() {
           clearDialogInputObject();
         })
         .catch(function (error) {
-          console.log(error);э
+          console.log(error);
+          э;
           showToast("error", "Ошибка добавления расхода");
         });
     } else {
@@ -263,10 +242,9 @@ function Spends() {
       summary: "",
       date: "",
     });
-    console.log("cleared")
   };
 
-  const showPopUp = (e) => {
+  const showConfirmDeletePopUp = (e) => {
     confirmPopup({
       group: "headless",
       target: e.currentTarget,
@@ -274,26 +252,29 @@ function Spends() {
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
-      accept: showAcceptToast,
-      reject: showRejectToast,
     });
   };
 
-  const popUpContent = ({ message, acceptBtnRef, rejectBtnRef, hide }) => {
+  const popUpContentTemplate = ({
+    message,
+    acceptBtnRef,
+    rejectBtnRef,
+    hide,
+  }) => {
     return (
       <div className="border-round p-3">
         <span>{message}</span>
         <div className="flex align-items-center gap-2 mt-3">
-        <Button
+          <Button
             ref={acceptBtnRef}
             outlined
             label="Да"
             severity="danger"
             onClick={() => {
-              handleConfirmPopUpButtonClick("accept", hide);
+              handleConfirmPopUpButtonClick("delete", hide);
             }}
             className="p-button-sm p-button-outlined p-button-danger"
-            ></Button>
+          ></Button>
           <Button
             ref={rejectBtnRef}
             label="Отменить"
@@ -303,8 +284,7 @@ function Spends() {
               handleConfirmPopUpButtonClick("reject", hide);
             }}
             className="p-button-sm p-button-text"
-            />
-
+          />
         </div>
       </div>
     );
@@ -319,7 +299,7 @@ function Spends() {
 
       const formattedDate = `${year}-${month}-${day}`;
       return formattedDate;
-    } else {
+    } else if (option === "to Date") {
       const dateString = timestamp;
       const [year, month, day] = dateString.split("-");
       const formattedDate = new Date(year, month - 1, day);
@@ -331,7 +311,7 @@ function Spends() {
   return (
     <>
       <Toast ref={toast} />
-      <ConfirmPopup group="headless" content={popUpContent} />
+      <ConfirmPopup group="headless" content={popUpContentTemplate} />
 
       <DialogComponent
         type="add"
@@ -342,8 +322,6 @@ function Spends() {
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
         handleAdd={handleAddSpend}
-        date={date}
-        setDate={setDate}
         formatCalendarDate={formatCalendarDate}
       />
 
@@ -356,8 +334,6 @@ function Spends() {
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
         handleEdit={handleEditSpend}
-        date={date}
-        setDate={setDate}
         formatCalendarDate={formatCalendarDate}
       />
 
@@ -376,7 +352,7 @@ function Spends() {
         <DataTable
           value={spends}
           paginator
-          header={header}
+          header={headerTemplate}
           rows={10}
           stripedRows
           showGridlines

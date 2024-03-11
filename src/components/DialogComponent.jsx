@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from "react";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Dialog } from "primereact/dialog";
@@ -16,16 +15,8 @@ export const DialogComponent = ({
   setDialogInputObject,
   handleAdd,
   handleEdit,
-  date,
-  setDate,
   formatCalendarDate,
   formatCalendarTime,
-  geoNames,
-  setSelectedGeo,
-  funnelsNames,
-  setSelectedFunnels,
-  sourcesNames,
-  setSelectedSources,
   dispatch,
 }) => {
   const handleDialogInputChange = (field, value) => {
@@ -35,7 +26,6 @@ export const DialogComponent = ({
     }));
     console.log(field, value);
   };
-  console.log("setIsDialogVisible", setIsDialogVisible);
 
   return (
     <Dialog
@@ -83,56 +73,40 @@ export const DialogComponent = ({
                 />
               ) : input.type === "calendar" ? (
                 <Calendar
-                  value={date}
+                  value={
+                    input.key === "offer_start" || input.key === "offer_end"
+                      ? formatCalendarTime(
+                          dialogInputObject[input.key],
+                          "to Date"
+                        )
+                      : formatCalendarDate(
+                          dialogInputObject[input.key],
+                          "to Date"
+                        )
+                  }
                   onChange={(e) => {
-                    setDate(e.value);
-                    handleDialogInputChange(
-                      input.key,
-                      formatCalendarDate(e.value, "to string")
-                    );
+                    input.key === "offer_start" || input.key === "offer_end"
+                      ? handleDialogInputChange(
+                          input.key,
+                          formatCalendarTime(e.value, "to string")
+                        )
+                      : handleDialogInputChange(
+                          input.key,
+                          formatCalendarDate(e.value, "to string")
+                        );
                   }}
-                  dateFormat="dd-mm-yy"
-                />
-              ) : input.type === "calendar offerstart" ? (
-                <Calendar
-                  value={formatCalendarTime(
-                    dialogInputObject[input.key],
-                    "to Date"
-                  )}
-                  timeOnly
-                  placeholder="00:00"
-                  onChange={(e) => {
-                    handleDialogInputChange(
-                      input.key,
-                      formatCalendarTime(e.value, "to string")
-                    );
-                  }}
-                  dateFormat="dd-mm-yy"
-                />
-              ) : input.type === "calendar offerend" ? (
-                <Calendar
-                  value={formatCalendarTime(
-                    dialogInputObject[input.key],
-                    "to Date"
-                  )}
-                  timeOnly
-                  placeholder="24:00"
-                  onChange={(e) => {
-                    handleDialogInputChange(
-                      input.key,
-                      formatCalendarTime(e.value, "to string")
-                    );
-                  }}
-                  dateFormat="dd-mm-yy"
+                  {...(input.key === "offer_start" || input.key === "offer_end"
+                    ? { timeOnly: true }
+                    : { dateFormat: "dd-mm-yy" })}
+                  placeholder={input.placeholder}
                 />
               ) : input.type === "multiselect funnels" ? (
                 <MultiSelect
                   value={dialogInputObject.funnels}
                   onChange={(e) => {
                     handleDialogInputChange(input.key, e.value);
-                    setSelectedFunnels(e.value);
                   }}
-                  options={funnelsNames}
+                  options={input.options}
                   filter
                   placeholder="Выберите воронки"
                   maxSelectedLabels={3}
@@ -143,9 +117,8 @@ export const DialogComponent = ({
                   value={dialogInputObject.geo}
                   onChange={(e) => {
                     handleDialogInputChange(input.key, e.value);
-                    setSelectedGeo(e.value);
                   }}
-                  options={geoNames}
+                  options={input.options}
                   filter
                   placeholder="Выберите гео"
                   maxSelectedLabels={3}
@@ -156,9 +129,8 @@ export const DialogComponent = ({
                   value={dialogInputObject.source}
                   onChange={(e) => {
                     handleDialogInputChange(input.key, e.value);
-                    setSelectedSources(e.value);
                   }}
-                  options={sourcesNames}
+                  options={input.options}
                   filter
                   placeholder="Выберите источники"
                   maxSelectedLabels={3}

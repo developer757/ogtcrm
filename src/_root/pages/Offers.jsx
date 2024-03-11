@@ -22,17 +22,6 @@ import { Chip } from "primereact/chip";
 import { InputSwitch } from "primereact/inputswitch";
 
 function Offers() {
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [funnelsNames, setFunnelsNames] = useState([]);
-  const [geoNames, setGeoNames] = useState([]);
-  const [selectedFunnels, setSelectedFunnels] = useState(null);
-  const [selectedGeo, setSelectedGeo] = useState(null);
-  const [activityChecked, setActivityChecked] = useState([]);
-  const [sourcesNames, setSourcesNames] = useState([]);
-  const [selectedSources, setSelectedSources] = useState(null);
-  const [filters, setFilters] = useState({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
   const [dialogInputObject, setDialogInputObject] = useState({
     name: "",
     cap: "",
@@ -65,6 +54,43 @@ function Offers() {
           ...state,
           isEditDialogVisible: action.payload,
         };
+      case "SET_FUNNELS":
+        return {
+          ...state,
+          funnels: action.payload,
+        };
+      case "SET_GEOS":
+        return {
+          ...state,
+          geos: action.payload,
+        };
+      case "SET_SOURCE":
+        return {
+          ...state,
+          source: action.payload,
+        };
+      case "SET_ACTIVITY_CHECKED":
+        return {
+          ...state,
+          activityChecked: action.payload,
+        };
+      case "UPDATE_ACTIVITY_CHECKED":
+        return {
+          ...state,
+          activityChecked: state.activityChecked.map((item) =>
+            item.id === action.id ? { ...item, active: action.value } : item
+          ),
+        };
+      case "SET_GLOBAL_FILTER_VALUE":
+        return {
+          ...state,
+          globalFilterValue: action.payload,
+        };
+      case "SET_FILTERS":
+        return {
+          ...state,
+          filters: action.payload,
+        };
     }
   };
   const [state, dispatch] = useReducer(reducer, {
@@ -72,6 +98,14 @@ function Offers() {
     selectedOfferID: null,
     isAddDialogVisible: false,
     isEditDialogVisible: false,
+    funnels: [],
+    geos: [],
+    activityChecked: [],
+    source: [],
+    globalFilterValue: "",
+    filters: {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    },
   });
 
   const toast = useRef(null);
@@ -94,25 +128,25 @@ function Offers() {
       key: "funnels",
       type: "multiselect funnels",
       placeholder: "Выберите воронки",
-      options: funnelsNames,
+      options: state.funnels,
     },
     {
       label: "Гео",
       key: "geo",
       type: "multiselect geo",
       placeholder: "Выберите гео",
-      options: geoNames,
+      options: state.geos,
     },
     {
       label: "Начало капы",
       key: "offer_start",
-      type: "calendar offerstart",
+      type: "calendar",
       placeholder: "Выберите начало капы",
     },
     {
       label: "Конец капы",
       key: "offer_end",
-      type: "calendar offerend",
+      type: "calendar",
       placeholder: "Выберите конец капы",
     },
     {
@@ -120,6 +154,7 @@ function Offers() {
       key: "source",
       type: "multiselect sources",
       placeholder: "Выберите источники",
+      options: state.source,
     },
   ];
 
@@ -141,25 +176,25 @@ function Offers() {
       key: "funnels",
       type: "multiselect funnels",
       placeholder: "Выберите воронки",
-      options: funnelsNames,
+      options: state.funnels,
     },
     {
       label: "Гео",
       key: "geo",
       type: "multiselect geo",
       placeholder: "Выберите гео",
-      options: geoNames,
+      options: state.geos,
     },
     {
       label: "Начало капы",
       key: "offer_start",
-      type: "calendar offerstart",
+      type: "calendar",
       placeholder: "Выберите начало капы",
     },
     {
       label: "Конец капы",
       key: "offer_end",
-      type: "calendar offerend",
+      type: "calendar",
       placeholder: "Выберите конец капы",
     },
     {
@@ -167,6 +202,7 @@ function Offers() {
       key: "source",
       type: "multiselect sources",
       placeholder: "Выберите источники",
+      options: state.source,
     },
   ];
 
@@ -181,16 +217,16 @@ function Offers() {
   useEffect(() => {
     renderOffers();
     getFunnels().then((response) => {
-      const funnelsArray = response.data.map(({ name }) => name);
-      setFunnelsNames(funnelsArray);
+      const updatedFunnels = response.data.map(({ name }) => name);
+      dispatch({ type: "SET_FUNNELS", payload: updatedFunnels });
     });
     getCountries().then((response) => {
-      const geoArray = response.data.map(({ iso }) => iso);
-      setGeoNames(geoArray);
+      const updatedGeos = response.data.map(({ iso }) => iso);
+      dispatch({ type: "SET_GEOS", payload: updatedGeos });
     });
     getSources().then((response) => {
-      const sourcesArray = response.data.map(({ name }) => name);
-      setSourcesNames(sourcesArray);
+      const updatedSources = response.data.map(({ name }) => name);
+      dispatch({ type: "SET_SOURCE", payload: updatedSources });
     });
   }, []);
 
@@ -215,12 +251,11 @@ function Offers() {
         return obj;
       });
       dispatch({ type: "SET_OFFERS", payload: updatedOffersData });
-      setActivityChecked(offerActiveArray);
+      dispatch({ type: "SET_ACTIVITY_CHECKED", payload: offerActiveArray });
     });
   };
 
   const handleEditActionClick = (rowData) => {
-    console.log("rowData: ", rowData);
 
     setDialogInputObject({
       name: rowData.name,
@@ -272,12 +307,11 @@ function Offers() {
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
-    let _filters = { ...filters };
-
+    let _filters = { ...state.filters };
     _filters["global"].value = value;
 
-    setFilters(_filters);
-    setGlobalFilterValue(value);
+    dispatch({ type: "SET_FILTERS", payload: _filters });
+    dispatch({ type: "SET_GLOBAL_FILTER_VALUE", payload: value });
   };
 
   const showToast = (severity, text) => {
@@ -309,15 +343,15 @@ function Offers() {
       addOffer(dialogInputObject)
         .then(function (response) {
           dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: false });
-          showToast("success", "Добавление оффера успешно");
+          showToast("success", response.data.message);
           renderOffers();
         })
         .catch(function (error) {
           console.log(error);
-          showToast("success", "Ошибка при добавлении оффера");
+          showToast("error", response.data.message);
         });
     } else {
-      console.log("Заполните все поля");
+      showToast("info", "Заполните все поля")
     }
   };
 
@@ -341,13 +375,13 @@ function Offers() {
     ) {
       editOffer(dialogInputObject, state.selectedOfferID)
         .then(function (response) {
-          showToast("success", "Редактирование оффера успешно");
+          showToast("success", response.data.message);
           dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: false });
           renderOffers();
         })
         .catch(function (error) {
           console.log(error);
-          showToast("error", "Ошибка при редактирования оффера");
+          showToast("error", response.data.message);
         });
     } else {
       console.log("Заполните все поля");
@@ -358,11 +392,11 @@ function Offers() {
     deleteOffer(state.selectedOfferID)
       .then(function (response) {
         console.log(response);
-        showToast("success", "Удаление оффера успешно");
+        showToast("success", response.data.message);
         renderOffers();
       })
       .catch(function (error) {
-        showToast("error", "Ошибка при удалении оффера");
+        showToast("error", response.data.message);
         console.log(error);
       });
   };
@@ -401,7 +435,7 @@ function Offers() {
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText
-            value={globalFilterValue}
+            value={state.globalFilterValue}
             onChange={onGlobalFilterChange}
             placeholder="Поиск"
           />
@@ -476,7 +510,7 @@ function Offers() {
   };
 
   const activityTemplate = (rowData) => {
-    const item = activityChecked.find((el) => el.id === rowData.id);
+    const item = state.activityChecked.find((el) => el.id === rowData.id);
 
     return (
       <InputSwitch
@@ -488,22 +522,19 @@ function Offers() {
   };
 
   const handleToggleActivity = (id, value) => {
-    console.log(value);
     const transformedActive = value ? 1 : 0;
     handleEditActivity(id, transformedActive);
-    setActivityChecked((prevActivityChecked) =>
-      prevActivityChecked.map((item) =>
-        item.id === id ? { ...item, active: value } : item
-      )
-    );
+    dispatch({ type: "UPDATE_ACTIVITY_CHECKED", id, value });
   };
 
   const handleEditActivity = (id, active) => {
     editActivity(id, active)
       .then((response) => {
+        showToast("success", response.data.message);
         console.log(response);
       })
       .catch((err) => {
+        showToast("error", response.data.message);
         console.log(err);
       });
   };
@@ -521,17 +552,7 @@ function Offers() {
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
         handleAdd={handleAddOffer}
-        selectedGeo={selectedGeo}
-        geoNames={geoNames}
-        setSelectedGeo={setSelectedGeo}
-        selectedFunnels={selectedFunnels}
-        funnelsNames={funnelsNames}
-        setSelectedFunnels={setSelectedFunnels}
         formatCalendarTime={formatCalendarTime}
-        sourcesNames={sourcesNames}
-        setSourcesNames={setSourcesNames}
-        selectedSources={selectedSources}
-        setSelectedSources={setSelectedSources}
         dispatch={dispatch}
       />
 
@@ -543,17 +564,7 @@ function Offers() {
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
         handleEdit={handleEditOffer}
-        selectedGeo={selectedGeo}
-        geoNames={geoNames}
-        setSelectedGeo={setSelectedGeo}
-        selectedFunnels={selectedFunnels}
-        funnelsNames={funnelsNames}
-        setSelectedFunnels={setSelectedFunnels}
         formatCalendarTime={formatCalendarTime}
-        sourcesNames={sourcesNames}
-        setSourcesNames={setSourcesNames}
-        selectedSources={selectedSources}
-        setSelectedSources={setSelectedSources}
         dispatch={dispatch}
       />
 
@@ -580,7 +591,7 @@ function Offers() {
           showGridlines
           rowsPerPageOptions={[5, 10, 25, 50]}
           paginatorPosition="top"
-          filters={filters}
+          filters={state.filters}
           style={{ width: "90%" }}
         >
           <Column field="id" header="ID"></Column>
