@@ -31,10 +31,19 @@ export const DialogComponent = ({
     <Dialog
       header={header}
       visible={isDialogVisible}
+      resizable={false}
       onHide={() => {
         if (dispatch) {
-          dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: false });
-          dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: false });
+          dispatch({
+            type: "SET_PROPERTY",
+            property: "isAddDialogVisible",
+            payload: false,
+          });
+          dispatch({
+            type: "SET_PROPERTY",
+            property: "isEditDialogVisible",
+            payload: false,
+          });
         } else {
           setIsDialogVisible(false);
         }

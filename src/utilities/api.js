@@ -115,3 +115,6 @@ export const addSource = (sourceName) =>
   axios.post(`http://25.18.88.64:8000/api/sources/store`, {
     name: sourceName,
   });
+
+export const getLeads = () =>
+  axios.get(`http://25.18.88.64:8000/api/leads`);

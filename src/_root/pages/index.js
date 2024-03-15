@@ -5,3 +5,4 @@ export { default as Spends } from "./Spends";
 export { default as Offers } from "./Offers";
 export { default as Sources } from "./Sources";
 export { default as Statistics } from "./Statistics";
+export { default as Leads } from "./Leads";

@@ -34,45 +34,10 @@ function Offers() {
 
   const reducer = (state, action) => {
     switch (action.type) {
-      case "SET_OFFERS":
+      case "SET_PROPERTY":
         return {
           ...state,
-          offers: action.payload,
-        };
-      case "SET_SELECTED_OFFER_ID":
-        return {
-          ...state,
-          selectedOfferID: action.payload,
-        };
-      case "SET_IS_ADD_DIALOG_VISIBLE":
-        return {
-          ...state,
-          isAddDialogVisible: action.payload,
-        };
-      case "SET_IS_EDIT_DIALOG_VISIBLE":
-        return {
-          ...state,
-          isEditDialogVisible: action.payload,
-        };
-      case "SET_FUNNELS":
-        return {
-          ...state,
-          funnels: action.payload,
-        };
-      case "SET_GEOS":
-        return {
-          ...state,
-          geos: action.payload,
-        };
-      case "SET_SOURCE":
-        return {
-          ...state,
-          source: action.payload,
-        };
-      case "SET_ACTIVITY_CHECKED":
-        return {
-          ...state,
-          activityChecked: action.payload,
+          [action.property]: action.payload,
         };
       case "UPDATE_ACTIVITY_CHECKED":
         return {
@@ -80,16 +45,6 @@ function Offers() {
           activityChecked: state.activityChecked.map((item) =>
             item.id === action.id ? { ...item, active: action.value } : item
           ),
-        };
-      case "SET_GLOBAL_FILTER_VALUE":
-        return {
-          ...state,
-          globalFilterValue: action.payload,
-        };
-      case "SET_FILTERS":
-        return {
-          ...state,
-          filters: action.payload,
         };
     }
   };
@@ -218,15 +173,27 @@ function Offers() {
     renderOffers();
     getFunnels().then((response) => {
       const updatedFunnels = response.data.map(({ name }) => name);
-      dispatch({ type: "SET_FUNNELS", payload: updatedFunnels });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "funnels",
+        payload: updatedFunnels,
+      });
     });
     getCountries().then((response) => {
       const updatedGeos = response.data.map(({ iso }) => iso);
-      dispatch({ type: "SET_GEOS", payload: updatedGeos });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "geos",
+        payload: updatedGeos,
+      });
     });
     getSources().then((response) => {
       const updatedSources = response.data.map(({ name }) => name);
-      dispatch({ type: "SET_SOURCE", payload: updatedSources });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "source",
+        payload: updatedSources,
+      });
     });
   }, []);
 
@@ -250,13 +217,20 @@ function Offers() {
 
         return obj;
       });
-      dispatch({ type: "SET_OFFERS", payload: updatedOffersData });
-      dispatch({ type: "SET_ACTIVITY_CHECKED", payload: offerActiveArray });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "offers",
+        payload: updatedOffersData,
+      });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "activityChecked",
+        payload: offerActiveArray,
+      });
     });
   };
 
   const handleEditActionClick = (rowData) => {
-
     setDialogInputObject({
       name: rowData.name,
       cap: rowData.cap,
@@ -267,13 +241,21 @@ function Offers() {
       source: JSON.parse(rowData.source),
     });
 
-    dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: true });
-    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: rowData.id });
+    dispatch({ type: "SET_PROPERTY", property: "isEditDialogVisible", payload: true });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedOfferID",
+      payload: rowData.id,
+    });
   };
 
   const handleDeleteActionClick = (e, rowData) => {
     showConfirmDeletePopUp(e);
-    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: rowData.id });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedOfferID",
+      payload: rowData.id,
+    });
   };
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
@@ -281,7 +263,11 @@ function Offers() {
       ? handleDeleteOffer(state.selectedOfferID)
       : showToast("info", "Удаление оффера отменено"),
       hide();
-    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: null });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedOfferID",
+      payload: null,
+    });
   };
 
   const formatCalendarTime = (timestamp, option) => {
@@ -310,8 +296,8 @@ function Offers() {
     let _filters = { ...state.filters };
     _filters["global"].value = value;
 
-    dispatch({ type: "SET_FILTERS", payload: _filters });
-    dispatch({ type: "SET_GLOBAL_FILTER_VALUE", payload: value });
+    dispatch({ type: "SET_PROPERTY", property: "filters", payload: _filters });
+    dispatch({ type: "SET_PROPERTY", property: "globalFilterValue", payload: value });
   };
 
   const showToast = (severity, text) => {
@@ -342,7 +328,7 @@ function Offers() {
     ) {
       addOffer(dialogInputObject)
         .then(function (response) {
-          dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: false });
+          dispatch({ type: "SET_PROPERTY", property: "isAddDialogVisible", payload: false });
           showToast("success", response.data.message);
           renderOffers();
         })
@@ -351,7 +337,7 @@ function Offers() {
           showToast("error", response.data.message);
         });
     } else {
-      showToast("info", "Заполните все поля")
+      showToast("info", "Заполните все поля");
     }
   };
 
@@ -376,7 +362,7 @@ function Offers() {
       editOffer(dialogInputObject, state.selectedOfferID)
         .then(function (response) {
           showToast("success", response.data.message);
-          dispatch({ type: "SET_IS_EDIT_DIALOG_VISIBLE", payload: false });
+          dispatch({ type: "SET_PROPERTY", property: "isEditDialogVisible", payload: false });
           renderOffers();
         })
         .catch(function (error) {
@@ -524,7 +510,7 @@ function Offers() {
   const handleToggleActivity = (id, value) => {
     const transformedActive = value ? 1 : 0;
     handleEditActivity(id, transformedActive);
-    dispatch({ type: "UPDATE_ACTIVITY_CHECKED", id, value });
+    dispatch({ type: "UPDATE_ACTIVITY_CHECKED", property: "activityChecked", id, value });
   };
 
   const handleEditActivity = (id, active) => {
@@ -578,7 +564,7 @@ function Offers() {
             label="Добавить"
             icon="pi pi-plus"
             onClick={() =>
-              dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: true })
+              dispatch({ type: "SET_PROPERTY", property: "isAddDialogVisible", payload: true })
             }
           />
         </div>
