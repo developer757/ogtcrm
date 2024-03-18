@@ -16,6 +16,7 @@ import {
   getSources,
   getLeads,
   postLead,
+  getLeadStatus,
 } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -89,9 +90,15 @@ function Leads() {
   };
 
   const postSelectedLead = (rowData) => {
-    postLead(rowData).then(response => {
-      console.log(response);
-    })
+    postLead(rowData)
+      .then((response) => {
+        console.log(response);
+        showToast("success", "Лид успешно отправлен");
+      })
+      .catch((error) => {
+        console.log(error);
+        showToast("error", "Ошибка при отправке лида");
+      });
   };
 
   const formatTimestamp = (timestamp) => {

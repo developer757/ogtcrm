@@ -125,4 +125,9 @@ export const postLead = (lead) =>
     fullname: lead.full_name,
     country: lead.geo,
     funnel: lead.funnel,
+    id: lead.id,
   });
+
+export const getLeadStatus = () => {
+  axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);
+};
