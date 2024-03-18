@@ -15,6 +15,7 @@ import {
   editActivity,
   getSources,
   getLeads,
+  postLead,
 } from "../../utilities/api";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -70,6 +71,7 @@ function Leads() {
         property: "leads",
         payload: response.data,
       });
+      console.log(response);
     });
   };
 
@@ -84,6 +86,12 @@ function Leads() {
       : showToast("info", "Удаление оффера отменено"),
       hide();
     dispatch({ type: "SET_SELECTED_OFFER_ID", payload: null });
+  };
+
+  const postSelectedLead = (rowData) => {
+    postLead(rowData).then(response => {
+      console.log(response);
+    })
   };
 
   const formatTimestamp = (timestamp) => {
@@ -214,34 +222,56 @@ function Leads() {
     return <div>{parsedArray[parsedArray.length - 1]}</div>;
   };
 
- const URLParamsTemplate = (rowData) => {
-  const splittedURLParams = rowData.url_params.split("&")
-  const selectedURLParamsArray = splittedURLParams.map(param => {
-    const [parameter, value] = param.split("=");
-    return { parameter, value };
-  });
+  const URLParamsTemplate = (rowData) => {
+    const splittedURLParams = rowData.url_params.split("&");
+    const selectedURLParamsArray = splittedURLParams.map((param) => {
+      const [parameter, value] = param.split("=");
+      return { parameter, value };
+    });
 
-  const handleClick = () => {
-    dispatch({ type: "SET_PROPERTY", property: "selectedLeadID", payload: rowData.id });
-    dispatch({ type: "SET_PROPERTY", property: "isParameterDialogVisible", payload: true });
-    dispatch({ type: "SET_PROPERTY", property: "selectedURLParams", payload: selectedURLParamsArray });
+    const handleClick = () => {
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "selectedLeadID",
+        payload: rowData.id,
+      });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "isParameterDialogVisible",
+        payload: true,
+      });
+      dispatch({
+        type: "SET_PROPERTY",
+        property: "selectedURLParams",
+        payload: selectedURLParamsArray,
+      });
+    };
+
+    return (
+      <div
+        style={{
+          cursor: "pointer",
+          color: "#34d399",
+          textDecoration: "underline",
+          textUnderlineOffset: "5px",
+        }}
+        onClick={handleClick}
+      >
+        {splittedURLParams[0]}
+      </div>
+    );
   };
 
-  return (
-    <div
-      style={{
-        cursor: "pointer",
-        color: "#34d399",
-        textDecoration: "underline",
-        textUnderlineOffset: "5px",
-      }}
-      onClick={handleClick}
-    >
-      {splittedURLParams[0]}
-    </div>
-  );
-};
-
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <Button
+        onClick={() => postSelectedLead(rowData)}
+        icon="pi pi-trash"
+        className="p-button-danger"
+        style={{ maxWidth: "48px", margin: "0 auto" }}
+      />
+    );
+  };
 
   const createdAtTemplate = (rowData) => {
     return <div>{formatTimestamp(rowData.created_at)}</div>;
@@ -344,6 +374,12 @@ function Leads() {
             field="date_deposited"
             header="Дата депозита"
             body={dateDepositedTemplate}
+          ></Column>
+          <Column
+            field="category"
+            header="Действие"
+            body={actionBodyTemplate}
+            style={{ width: "30%" }}
           ></Column>
         </DataTable>
       </div>

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 
 import {
   Domains,
@@ -9,6 +9,7 @@ import {
   Sources,
   Statistics,
   Leads,
+  Dashboard,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
@@ -19,6 +20,8 @@ function App() {
         {/* тут будет авторизация */}
 
         <Route element={<RootLayout />}>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/funnels" element={<Funnels />} />
