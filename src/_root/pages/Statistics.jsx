@@ -1,9 +1,241 @@
-import React from 'react'
+import { useState, useEffect, useRef } from "react";
+
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { Toast } from "primereact/toast";
+
+import { Calendar } from "primereact/calendar";
+
+import { getFunnels, getOffers, getUsers } from "../../utilities/api";
+import { getLeads } from "../../dummyData/DummyLeads";
 
 function Statistics() {
+  const [funnels, setFunnels] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dates, setDates] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
+  const [leads, setLeads] = useState([]);
+
+  const toast = useRef(null);
+
+  const initStartDate = () => {
+    const currentDate = new Date(); // Получить текущую дату и время
+    const startToday = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate()
+    ); // Установить время на 00:00
+
+    setStartDate(startToday);
+  };
+
+  const showToast = (severity, text) => {
+    toast.current.show({
+      severity: severity,
+      detail: text,
+      life: 2000,
+    });
+  };
+
+  useEffect(() => {
+    renderFunnels();
+    renderOffers();
+    renderUsers();
+    initStartDate();
+  }, []);
+
+  useEffect(() => {
+    setLeads(getLeads().filter(filterLeadsByDate));
+  }, [startDate, endDate]);
+
+  const renderFunnels = () => {
+    getFunnels()
+      .then((response) => {
+        setFunnels(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        showToast("error", "Ошибка при загрузке воронок");
+      });
+  };
+  const renderOffers = () => {
+    getOffers()
+      .then((response) => {
+        setOffers(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        showToast("error", "Ошибка при загрузке оферов");
+      });
+  };
+  const renderUsers = () => {
+    getUsers()
+      .then((response) => {
+        setUsers(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        showToast("error", "Ошибка при загрузке пользователей");
+      });
+  };
+
+  function filterLeadsByDate(item) {
+    const itemDate = new Date(item.dateArrived);
+    return itemDate >= startDate && itemDate <= endDate;
+  }
+
+  const filteredData = leads.filter(filterLeadsByDate);
+
+  function filterLeadsByUser(item, username) {
+    return item.user === username;
+  }
+
+  function filterLeadsValide(item) {
+    return item.isValid === true;
+  }
+
+  const filteredDataByUser = leads.filter((item) =>
+    filterLeadsByUser(item, "Dirty Harry")
+  );
+  console.log(filteredDataByUser);
+
+  console.log(leads);
+  console.log(filteredData);
+
   return (
-    <div>Statistics</div>
-  )
+    <div className="" style={{ maxWidth: "100%", margin: "0 auto" }}>
+      <Toast ref={toast} />
+
+      <div>
+        <h2 className="m-0">Статистика</h2>
+        <div className="card flex justify-content-between my-4">
+          <Button label="Сегодня" />
+          <Button label="Текущая неделя" />
+          <Button label="Прошлая неделя" />
+          <Button label="Текущий месяц" />
+          <Button label="Прошлый месяц" />
+
+          <Calendar
+            value={dates}
+            onChange={(e) => {
+              setDates(e.value);
+              setStartDate(e.value[0]);
+              setEndDate(e.value[1]);
+            }}
+            selectionMode="range"
+            readOnlyInput
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+        <div style={{ flex: "1 0 48%" }}>
+          <DataTable
+            value={users}
+            stripedRows
+            showGridlines
+            dataKey="id"
+            loading={loading}
+            emptyMessage="Пользователи не найдены."
+          >
+            <Column field="name" header="Юзер"></Column>
+            <Column
+              field="leads"
+              header="Лиды"
+              body={(rowData) =>
+                leads.filter((item) => filterLeadsByUser(item, rowData.name))
+                  .length
+              }
+            ></Column>
+            <Column
+              field="valid"
+              header="Валид"
+              body={(rowData) =>
+                leads
+                  .filter((item) => filterLeadsByUser(item, rowData.name))
+                  .filter((item) => filterLeadsValide(item)).length
+              }
+            ></Column>
+            <Column
+              field="id"
+              header="Невалид"
+              body={(rowData) =>
+                leads.filter((item) => filterLeadsByUser(item, rowData.name))
+                  .length -
+                leads
+                  .filter((item) => filterLeadsByUser(item, rowData.name))
+                  .filter((item) => filterLeadsValide(item)).length
+              }
+            ></Column>
+            <Column
+              field="id"
+              header="% невалида"
+              body={(rowData) =>
+                (
+                  (leads.filter((item) => filterLeadsByUser(item, rowData.name))
+                    .length -
+                    leads
+                      .filter((item) => filterLeadsByUser(item, rowData.name))
+                      .filter((item) => filterLeadsValide(item)).length) /
+                  leads.filter((item) => filterLeadsByUser(item, rowData.name))
+                    .length
+                ).toFixed(2) *
+                  100 +
+                "%"
+              }
+            ></Column>
+            <Column field="id" header="Конверсии"></Column>
+            <Column field="id" header="%CR"></Column>
+            <Column field="id" header="Запрошено"></Column>
+            <Column field="id" header="CPL"></Column>
+          </DataTable>
+        </div>
+        <div style={{ flex: "1 0 48%" }}>
+          <DataTable
+            value={offers}
+            stripedRows
+            showGridlines
+            dataKey="id"
+            loading={loading}
+            emptyMessage="Воронки не найдена."
+          >
+            <Column field="name" header="Оффер"></Column>
+            <Column field="id" header="Лиды"></Column>
+            <Column field="category" header="Валид"></Column>
+            <Column field="id" header="Невалид"></Column>
+            <Column field="id" header="% невалида"></Column>
+            <Column field="id" header="Конверсии"></Column>
+            <Column field="id" header="%CR"></Column>
+            <Column field="id" header="Доход"></Column>
+          </DataTable>
+        </div>
+        <div style={{ flex: "0 1 50%" }}>
+          <DataTable
+            value={funnels}
+            stripedRows
+            showGridlines
+            dataKey="id"
+            loading={loading}
+            emptyMessage="Воронки не найдена."
+          >
+            <Column field="name" header="Воронка"></Column>
+            <Column field="id" header="Лиды"></Column>
+            <Column field="category" header="Валид"></Column>
+            <Column field="id" header="Конверсии"></Column>
+            <Column field="id" header="%CR"></Column>
+          </DataTable>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default Statistics
+export default Statistics;
