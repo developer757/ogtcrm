@@ -6,35 +6,39 @@ import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import {
-  getOffers,
+  deleteOffer,
   getCountries,
   getFunnels,
-  deleteOffer,
-  addOffer,
-  editOffer,
-  editActivity,
-  getSources,
   getLeads,
+  getOffers,
   postLead,
-  getLeadStatus,
 } from "../../utilities/api";
+import { statuses } from "../../utilities/statuses";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
 import { Dialog } from "primereact/dialog";
-import { Chip } from "primereact/chip";
-import { InputSwitch } from "primereact/inputswitch";
+import { DialogComponent } from "../../components/DialogComponent";
 
 function Leads() {
+  const [isLeadDialogVisible, setIsLeadDialogVisible] = useState(false);
+  const [isLeadDialogDisabled, setIsLeadDialogDisabled] = useState(true);
+  const [offers, setOffers] = useState([]);
+  const [funnels, setFunnels] = useState([]);
+  const [geos, setGeos] = useState([]);
   const [dialogInputObject, setDialogInputObject] = useState({
-    name: "",
-    cap: "",
-    funnels: [],
+    full_name: "",
+    domain: "",
+    email: "",
+    funnel: "",
+    phone: "",
+    offer: "",
+    ip: "",
+    status: "",
+    user: "",
     geo: [],
-    offer_start: "",
-    offer_end: "",
-    source: [],
+    created_at: "",
+    url_params: "",
   });
-
   const reducer = (state, action) => {
     switch (action.type) {
       case "SET_PROPERTY":
@@ -47,9 +51,89 @@ function Leads() {
   const [state, dispatch] = useReducer(reducer, {
     leads: [],
     isParameterDialogVisible: false,
+    isLeadDialogVisible: false,
     selectedLeadID: null,
     selectedURLParams: [],
   });
+
+  const leadDialogInputs = [
+    {
+      label: "Имя",
+      key: "full_name",
+      type: "text",
+      placeholder: "Имя",
+    },
+    {
+      label: "URL",
+      key: "domain",
+      type: "text",
+      placeholder: "URL",
+    },
+    {
+      label: "Email",
+      key: "email",
+      type: "text",
+      placeholder: "Email",
+    },
+    {
+      label: "Воронка",
+      key: "funnel",
+      type: "dropdown",
+      placeholder: "Воронка",
+      options: funnels,
+    },
+    {
+      label: "Телефон",
+      key: "phone",
+      type: "text",
+      placeholder: "Телефон",
+    },
+    {
+      label: "Оффер",
+      key: "offer",
+      type: "dropdown",
+      placeholder: "Оффер",
+      options: offers,
+    },
+    {
+      label: "IP",
+      key: "ip",
+      type: "text",
+      placeholder: "IP",
+    },
+    {
+      label: "Статус",
+      key: "status",
+      type: "dropdown",
+      placeholder: "Статус",
+      options: statuses,
+    },
+    {
+      label: "Пользователь",
+      key: "user",
+      type: "text",
+      placeholder: "Пользователь",
+    },
+    {
+      label: "Гео",
+      key: "geo",
+      type: "dropdown",
+      placeholder: "Гео",
+      options: geos,
+    },
+    {
+      label: "Дата создания",
+      key: "created_at",
+      type: "text",
+      placeholder: "Дата создания",
+    },
+    {
+      label: "Параметры",
+      key: "url_params",
+      type: "text",
+      placeholder: "Параметры",
+    },
+  ];
 
   const toast = useRef(null);
 
@@ -63,6 +147,18 @@ function Leads() {
 
   useEffect(() => {
     renderLeads();
+    getOffers().then((response) => {
+      const updatedOffers = response.data.map(({ name }) => name);
+      setOffers(updatedOffers);
+    });
+    getFunnels().then((response) => {
+      const updatedFunnels = response.data.map(({ name }) => name);
+      setFunnels(updatedFunnels);
+    });
+    getCountries().then((response) => {
+      const updatedGeos = response.data.map(({ iso }) => iso);
+      setGeos(updatedGeos);
+    });
   }, []);
 
   const renderLeads = () => {
@@ -90,15 +186,9 @@ function Leads() {
   };
 
   const postSelectedLead = (rowData) => {
-    postLead(rowData)
-      .then((response) => {
-        console.log(response);
-        showToast("success", "Лид успешно отправлен");
-      })
-      .catch((error) => {
-        console.log(error);
-        showToast("error", "Ошибка при отправке лида");
-      });
+    postLead(rowData).then((response) => {
+      console.log(response);
+    });
   };
 
   const formatTimestamp = (timestamp) => {
@@ -229,30 +319,57 @@ function Leads() {
     return <div>{parsedArray[parsedArray.length - 1]}</div>;
   };
 
+  const handleURLParameterClick = (rowData, selectedURLParamsArray) => {
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedLeadID",
+      payload: rowData.id,
+    });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "isParameterDialogVisible",
+      payload: true,
+    });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedURLParams",
+      payload: selectedURLParamsArray,
+    });
+  };
+
+  const handlePhoneClick = (rowData) => {
+    console.log("rowData", rowData);
+    const parsedStatusArray = JSON.parse(rowData.status);
+    const newestStatus = parsedStatusArray[parsedStatusArray.length - 1];
+    console.log(newestStatus);
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "selectedLeadID",
+      payload: rowData.id,
+    });
+    setIsLeadDialogVisible(true);
+    setDialogInputObject({
+      full_name: rowData.full_name,
+      domain: rowData.domain,
+      email: rowData.email,
+      funnel: rowData.funnel,
+      phone: rowData.phone,
+      offer: rowData.offer,
+      ip: rowData.ip,
+      status: newestStatus,
+      user: rowData.user,
+      geo: rowData.geo,
+      created_at: rowData.created_at,
+      url_params: rowData.url_params,
+    });
+  };
+
   const URLParamsTemplate = (rowData) => {
     const splittedURLParams = rowData.url_params.split("&");
     const selectedURLParamsArray = splittedURLParams.map((param) => {
       const [parameter, value] = param.split("=");
       return { parameter, value };
     });
-
-    const handleClick = () => {
-      dispatch({
-        type: "SET_PROPERTY",
-        property: "selectedLeadID",
-        payload: rowData.id,
-      });
-      dispatch({
-        type: "SET_PROPERTY",
-        property: "isParameterDialogVisible",
-        payload: true,
-      });
-      dispatch({
-        type: "SET_PROPERTY",
-        property: "selectedURLParams",
-        payload: selectedURLParamsArray,
-      });
-    };
 
     return (
       <div
@@ -262,7 +379,9 @@ function Leads() {
           textDecoration: "underline",
           textUnderlineOffset: "5px",
         }}
-        onClick={handleClick}
+        onClick={() => {
+          handleURLParameterClick(rowData, selectedURLParamsArray);
+        }}
       >
         {splittedURLParams[0]}
       </div>
@@ -292,6 +411,24 @@ function Leads() {
     return <div>{formatTimestamp(rowData.dateDeposited)}</div>;
   };
 
+  const phoneTemplate = (rowData) => {
+    return (
+      <div
+        style={{
+          cursor: "pointer",
+          color: "#34d399",
+          textDecoration: "underline",
+          textUnderlineOffset: "5px",
+        }}
+        onClick={() => {
+          handlePhoneClick(rowData);
+        }}
+      >
+        {rowData.phone}
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog
@@ -299,6 +436,7 @@ function Leads() {
         header="Параметры"
         visible={state.isParameterDialogVisible}
         resizable={false}
+        draggable={false}
         onHide={() => {
           dispatch({
             type: "SET_PROPERTY",
@@ -322,6 +460,19 @@ function Leads() {
           <Column field="value" header="Значение"></Column>
         </DataTable>
       </Dialog>
+
+      <DialogComponent
+        type="lead"
+        isDialogVisible={isLeadDialogVisible}
+        setIsDialogVisible={setIsLeadDialogVisible}
+        header="Лид"
+        dialogInputObject={dialogInputObject}
+        setDialogInputObject={setDialogInputObject}
+        isLeadDialogDisabled={isLeadDialogDisabled}
+        setIsLeadDialogDisabled={setIsLeadDialogDisabled}
+        inputs={leadDialogInputs}
+      />
+
       <Toast ref={toast} />
       <ConfirmPopup group="headless" content={popUpContentTemplate} />
 
@@ -353,7 +504,11 @@ function Leads() {
         >
           <Column field="id" header="ID"></Column>
           <Column field="offer" header="Оффер"></Column>
-          <Column field="phone" header="Номер телефона"></Column>
+          <Column
+            field="phone"
+            header="Номер телефона"
+            body={phoneTemplate}
+          ></Column>
           <Column field="full_name" header="Имя/Фамилия"></Column>
           <Column field="email" header="Почта"></Column>
           <Column field="geo" header="Гео"></Column>

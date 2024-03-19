@@ -88,16 +88,9 @@ function Spends() {
     },
   ];
 
-  const getFilteredUsers = (array) => {
-    return array.map((obj) => {
-      const { name } = obj;
-      return { name };
-    });
-  };
-
   useEffect(() => {
     getUsers().then((response) => {
-      setDialogNames(getFilteredUsers(response.data));
+      setDialogNames(response.data.map((obj) => obj.name));
     });
     console.log(dialogNames);
     renderSpends();
@@ -128,7 +121,7 @@ function Spends() {
   const handleConfirmPopUpButtonClick = (option, hide) => {
     option === "delete"
       ? handleDeleteSpend(selectedSpendID)
-      : showRejectToast();
+      : showToast("info", "Удаление расхода отменено");
     hide();
     setSelectedSpendID(null);
   };
@@ -175,14 +168,6 @@ function Spends() {
         </span>
       </div>
     );
-  };
-
-  const showAcceptToast = () => {
-    showToast("success", "Расход успешно удалён");
-  };
-
-  const showRejectToast = () => {
-    showToast("info", "Удаление расхода отменено");
   };
 
   const handleAddSpend = ({ name, summary, date }) => {

@@ -9,6 +9,8 @@ export const DialogComponent = ({
   type,
   isDialogVisible,
   setIsDialogVisible,
+  isLeadDialogDisabled,
+  setIsLeadDialogDisabled,
   header,
   inputs,
   dialogInputObject,
@@ -32,6 +34,7 @@ export const DialogComponent = ({
       header={header}
       visible={isDialogVisible}
       resizable={false}
+      draggable={false}
       onHide={() => {
         if (dispatch) {
           dispatch({
@@ -44,20 +47,32 @@ export const DialogComponent = ({
             property: "isEditDialogVisible",
             payload: false,
           });
+          dispatch({
+            type: "SET_PROPERTY",
+            property: "isLeadDialogVisible",
+            payload: false,
+          });
         } else {
           setIsDialogVisible(false);
         }
       }}
-      className="w-full max-w-25rem min-w-25rem"
+      className={`w-full ${type !== "lead" ? "max-w-25rem" : ""} min-w-25rem`}
+      style={{ maxWidth: "700px" }}
     >
-      <div className="flex flex-column gap-4 mt-2">
+      <div
+        className={`${
+          type === "lead"
+            ? "w-full flex flex-wrap gap-3 mt-2 justify-content-center"
+            : " flex flex-column gap-4 mt-2"
+        }`}
+      >
         {inputs.map((input, index) => {
-          if (input.options && input.options[0]) {
-            var options = input.options[0];
-            var firstKey = Object.keys(options)[0];
-          }
           return (
-            <div className="flex flex-column gap-2" key={index}>
+            <div
+              className="w-full flex flex-column gap-2"
+              key={index}
+              style={type === "lead" ? { maxWidth: "calc(50% - 0.5rem)" } : {}}
+            >
               <h4 className="m-0">{input.label}</h4>
               {input.type === "text" ? (
                 <InputText
@@ -67,6 +82,7 @@ export const DialogComponent = ({
                   }
                   style={{ width: "100%" }}
                   placeholder={input.placeholder}
+                  disabled={isLeadDialogDisabled}
                 />
               ) : input.type === "dropdown" ? (
                 <Dropdown
@@ -75,10 +91,9 @@ export const DialogComponent = ({
                     handleDialogInputChange(input.key, e.target.value)
                   }
                   options={input.options}
-                  optionLabel={firstKey}
-                  optionValue={firstKey}
                   placeholder={input.placeholder}
                   className="w-full"
+                  disabled={isLeadDialogDisabled}
                 />
               ) : input.type === "calendar" ? (
                 <Calendar
@@ -109,41 +124,17 @@ export const DialogComponent = ({
                     : { dateFormat: "dd-mm-yy" })}
                   placeholder={input.placeholder}
                 />
-              ) : input.type === "multiselect funnels" ? (
+              ) : input.type === "multiselect" ? (
                 <MultiSelect
-                  value={dialogInputObject.funnels}
+                  value={dialogInputObject[input.key]}
                   onChange={(e) => {
                     handleDialogInputChange(input.key, e.value);
                   }}
                   options={input.options}
                   filter
-                  placeholder="Выберите воронки"
                   maxSelectedLabels={3}
                   className="w-full"
-                />
-              ) : input.type === "multiselect geo" ? (
-                <MultiSelect
-                  value={dialogInputObject.geo}
-                  onChange={(e) => {
-                    handleDialogInputChange(input.key, e.value);
-                  }}
-                  options={input.options}
-                  filter
-                  placeholder="Выберите гео"
-                  maxSelectedLabels={3}
-                  className="w-full"
-                />
-              ) : input.type === "multiselect sources" ? (
-                <MultiSelect
-                  value={dialogInputObject.source}
-                  onChange={(e) => {
-                    handleDialogInputChange(input.key, e.value);
-                  }}
-                  options={input.options}
-                  filter
-                  placeholder="Выберите источники"
-                  maxSelectedLabels={3}
-                  className="w-full"
+                  placeholder={input.placeholder}
                 />
               ) : (
                 <span>Другой тип input</span>
@@ -153,7 +144,8 @@ export const DialogComponent = ({
         })}
         <div className="flex">
           <Button
-            label={type === "add" ? "Добавить" : "Редактировать"}
+            label={type === "add" ? "Добавить" : type === "edit" ? "Редактировать" : "Отправить"}
+
             onClick={() =>
               type === "add"
                 ? handleAdd(dialogInputObject)

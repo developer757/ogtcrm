@@ -66,11 +66,7 @@ function Domains() {
     renderDomains();
     getUsers()
       .then((response) => {
-        setUsers(
-          response.data.map((user) => {
-            return { name: user.name };
-          })
-        );
+        setUsers(response.data.map((obj) => obj.name));
       })
       .catch((error) => {
         console.log(error);

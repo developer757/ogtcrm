@@ -81,14 +81,14 @@ function Offers() {
     {
       label: "Воронки",
       key: "funnels",
-      type: "multiselect funnels",
+      type: "multiselect",
       placeholder: "Выберите воронки",
       options: state.funnels,
     },
     {
       label: "Гео",
       key: "geo",
-      type: "multiselect geo",
+      type: "multiselect",
       placeholder: "Выберите гео",
       options: state.geos,
     },
@@ -107,7 +107,7 @@ function Offers() {
     {
       label: "Источники",
       key: "source",
-      type: "multiselect sources",
+      type: "multiselect",
       placeholder: "Выберите источники",
       options: state.source,
     },
@@ -129,14 +129,14 @@ function Offers() {
     {
       label: "Воронки",
       key: "funnels",
-      type: "multiselect funnels",
+      type: "multiselect",
       placeholder: "Выберите воронки",
       options: state.funnels,
     },
     {
       label: "Гео",
       key: "geo",
-      type: "multiselect geo",
+      type: "multiselect",
       placeholder: "Выберите гео",
       options: state.geos,
     },
@@ -155,7 +155,7 @@ function Offers() {
     {
       label: "Источники",
       key: "source",
-      type: "multiselect sources",
+      type: "multiselect",
       placeholder: "Выберите источники",
       options: state.source,
     },
@@ -241,7 +241,11 @@ function Offers() {
       source: JSON.parse(rowData.source),
     });
 
-    dispatch({ type: "SET_PROPERTY", property: "isEditDialogVisible", payload: true });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "isEditDialogVisible",
+      payload: true,
+    });
     dispatch({
       type: "SET_PROPERTY",
       property: "selectedOfferID",
@@ -297,7 +301,11 @@ function Offers() {
     _filters["global"].value = value;
 
     dispatch({ type: "SET_PROPERTY", property: "filters", payload: _filters });
-    dispatch({ type: "SET_PROPERTY", property: "globalFilterValue", payload: value });
+    dispatch({
+      type: "SET_PROPERTY",
+      property: "globalFilterValue",
+      payload: value,
+    });
   };
 
   const showToast = (severity, text) => {
@@ -328,7 +336,11 @@ function Offers() {
     ) {
       addOffer(dialogInputObject)
         .then(function (response) {
-          dispatch({ type: "SET_PROPERTY", property: "isAddDialogVisible", payload: false });
+          dispatch({
+            type: "SET_PROPERTY",
+            property: "isAddDialogVisible",
+            payload: false,
+          });
           showToast("success", response.data.message);
           renderOffers();
         })
@@ -362,7 +374,11 @@ function Offers() {
       editOffer(dialogInputObject, state.selectedOfferID)
         .then(function (response) {
           showToast("success", response.data.message);
-          dispatch({ type: "SET_PROPERTY", property: "isEditDialogVisible", payload: false });
+          dispatch({
+            type: "SET_PROPERTY",
+            property: "isEditDialogVisible",
+            payload: false,
+          });
           renderOffers();
         })
         .catch(function (error) {
@@ -510,7 +526,12 @@ function Offers() {
   const handleToggleActivity = (id, value) => {
     const transformedActive = value ? 1 : 0;
     handleEditActivity(id, transformedActive);
-    dispatch({ type: "UPDATE_ACTIVITY_CHECKED", property: "activityChecked", id, value });
+    dispatch({
+      type: "UPDATE_ACTIVITY_CHECKED",
+      property: "activityChecked",
+      id,
+      value,
+    });
   };
 
   const handleEditActivity = (id, active) => {
@@ -564,7 +585,11 @@ function Offers() {
             label="Добавить"
             icon="pi pi-plus"
             onClick={() =>
-              dispatch({ type: "SET_PROPERTY", property: "isAddDialogVisible", payload: true })
+              dispatch({
+                type: "SET_PROPERTY",
+                property: "isAddDialogVisible",
+                payload: true,
+              })
             }
           />
         </div>
