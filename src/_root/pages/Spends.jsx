@@ -22,7 +22,7 @@ function Spends() {
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [globalFilterValue, setGlobalFilterValue] = useState("");
-  const [dialogNames, setDialogNames] = useState([]);
+  const [users, setUsers] = useState([]);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
   });
@@ -48,7 +48,7 @@ function Spends() {
       key: "name",
       type: "dropdown",
       placeholder: "Введите имя",
-      options: dialogNames,
+      options: users,
     },
     {
       label: "Сумма",
@@ -61,7 +61,7 @@ function Spends() {
       key: "date",
       type: "calendar",
       placeholder: "Выберите дату",
-      options: dialogNames,
+      options: users,
     },
   ];
 
@@ -71,7 +71,7 @@ function Spends() {
       key: "name",
       type: "dropdown",
       placeholder: "Введите имя",
-      options: dialogNames,
+      options: users,
     },
     {
       label: "Сумма",
@@ -84,15 +84,14 @@ function Spends() {
       key: "date",
       type: "calendar",
       placeholder: "Выберите дату",
-      options: dialogNames,
     },
   ];
 
   useEffect(() => {
     getUsers().then((response) => {
-      setDialogNames(response.data.map((obj) => obj.name));
+      setUsers(response.data.map((obj) => obj.name));
     });
-    console.log(dialogNames);
+    console.log(users);
     renderSpends();
   }, []);
 
@@ -302,7 +301,7 @@ function Spends() {
         type="add"
         isDialogVisible={isAddDialogVisible}
         setIsDialogVisible={setIsAddDialogVisible}
-        header={"Добавить расходы"}
+        header={"Добавить расход"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
@@ -314,7 +313,7 @@ function Spends() {
         type="edit"
         isDialogVisible={isEditDialogVisible}
         setIsDialogVisible={setIsEditDialogVisible}
-        header={"Редактировать расходы"}
+        header={"Редактировать расход"}
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}

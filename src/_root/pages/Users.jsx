@@ -26,7 +26,7 @@ function Users() {
     role: "",
   });
 
-  const dialogRoles = [{ name: "Admin" }, { name: "Buyer" }];
+  const dialogRoles = ["Admin", "Buyer"];
 
   const toast = useRef(null);
 

@@ -118,15 +118,11 @@ export const addSource = (sourceName) =>
 
 export const getLeads = () => axios.get(`http://25.18.88.64:8000/api/leads`);
 
-export const postLead = (lead) =>
-  axios.post(`http://25.18.88.64:8000/api/offers/integra`, {
-    email: lead.email,
-    phone: lead.phone,
-    fullname: lead.full_name,
-    country: lead.geo,
-    funnel: lead.funnel,
-    id: lead.id,
-  });
+export const postLead = (dialogInputObject) =>
+  axios.post(`http://25.18.88.64:8000/api/offers/integra`, JSON.stringify(dialogInputObject));
+
+export const addLead = (dialogInputObject) =>
+  axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);
 
 export const getLeadStatus = () => {
   axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);

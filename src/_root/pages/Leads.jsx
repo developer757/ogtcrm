@@ -6,12 +6,14 @@ import { FilterMatchMode } from "primereact/api";
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import {
+  addLead,
   deleteOffer,
   getCountries,
   getFunnels,
   getLeads,
   getOffers,
   postLead,
+  postLeadWithoutIntegration,
 } from "../../utilities/api";
 import { statuses } from "../../utilities/statuses";
 import { ConfirmPopup } from "primereact/confirmpopup";
@@ -124,7 +126,7 @@ function Leads() {
     {
       label: "Дата создания",
       key: "created_at",
-      type: "text",
+      type: "calendar",
       placeholder: "Дата создания",
     },
     {
@@ -185,10 +187,17 @@ function Leads() {
     dispatch({ type: "SET_SELECTED_OFFER_ID", payload: null });
   };
 
-  const postSelectedLead = (rowData) => {
-    postLead(rowData).then((response) => {
-      console.log(response);
-    });
+  const handleAddLead = () => {
+    addLead(dialogInputObject)
+      .then(function (response) {
+        setIsLeadDialogVisible(false)
+        showToast("success", response.data.message);
+        renderLeads();
+      })
+      .catch(function (error) {
+        console.log(error);
+        showToast("error", response.data.message);
+      });
   };
 
   const formatTimestamp = (timestamp) => {
@@ -240,11 +249,29 @@ function Leads() {
     confirmPopup({
       group: "headless",
       target: e.currentTarget,
-      message: "Вы точно хотите удалить оффер?",
+      message: "Вы точно хотите удалить лида?",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
     });
+  };
+
+  const formatCalendarDate = (timestamp, option) => {
+    if (option === "to string") {
+      const originalDate = new Date(timestamp);
+      const year = originalDate.getFullYear();
+      const month = String(originalDate.getMonth() + 1).padStart(2, "0");
+      const day = String(originalDate.getDate()).padStart(2, "0");
+
+      const formattedDate = `${year}-${month}-${day}`;
+      return formattedDate;
+    } else if (option === "to Date") {
+      const dateString = timestamp;
+      const [year, month, day] = dateString.split("-");
+      const formattedDate = new Date(year, month - 1, day);
+
+      return formattedDate;
+    }
   };
 
   const actionButtonsTemplate = (rowData) => {
@@ -312,11 +339,6 @@ function Leads() {
         </div>
       </div>
     );
-  };
-
-  const statusTemplate = (rowData) => {
-    const parsedArray = JSON.parse(rowData.status);
-    return <div>{parsedArray[parsedArray.length - 1]}</div>;
   };
 
   const handleURLParameterClick = (rowData, selectedURLParamsArray) => {
@@ -391,7 +413,7 @@ function Leads() {
   const actionBodyTemplate = (rowData) => {
     return (
       <Button
-        onClick={() => postSelectedLead(rowData)}
+        onClick={() => console.log("lol")}
         icon="pi pi-trash"
         className="p-button-danger"
         style={{ maxWidth: "48px", margin: "0 auto" }}
@@ -408,7 +430,16 @@ function Leads() {
   };
 
   const dateDepositedTemplate = (rowData) => {
-    return <div>{formatTimestamp(rowData.dateDeposited)}</div>;
+    return <div>{formatTimestamp(rowData.date_deposited)}</div>;
+  };
+
+  const leadSentTemplate = (rowData) => {
+    return <div>{formatTimestamp(rowData.lead_sent)}</div>;
+  };
+
+  const statusTemplate = (rowData) => {
+    const parsedArray = JSON.parse(rowData.status);
+    return <div>{parsedArray[parsedArray.length - 1]}</div>;
   };
 
   const phoneTemplate = (rowData) => {
@@ -448,11 +479,6 @@ function Leads() {
             property: "isParameterDialogVisible",
             payload: false,
           });
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "selectedURLParams",
-            payload: [],
-          });
         }}
       >
         <DataTable value={state.selectedURLParams} stripedRows showGridlines>
@@ -470,7 +496,9 @@ function Leads() {
         setDialogInputObject={setDialogInputObject}
         isLeadDialogDisabled={isLeadDialogDisabled}
         setIsLeadDialogDisabled={setIsLeadDialogDisabled}
+        formatCalendarDate={formatCalendarDate}
         inputs={leadDialogInputs}
+        handleAdd={handleAddLead}
       />
 
       <Toast ref={toast} />
@@ -528,9 +556,9 @@ function Leads() {
             body={createdAtTemplate}
           ></Column>
           <Column
-            field="updated_at"
+            field="lead_sent"
             header="Лид отправлен"
-            body={updatedAtTemplate}
+            body={leadSentTemplate}
           ></Column>
           <Column
             field="date_deposited"
