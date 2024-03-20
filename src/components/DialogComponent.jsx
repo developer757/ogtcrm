@@ -54,9 +54,10 @@ export const DialogComponent = ({
           });
         } else {
           setIsDialogVisible(false);
+          setDialogInputObject({})
         }
       }}
-      className={`w-full ${type !== "lead" ? "max-w-25rem" : ""} min-w-25rem`}
+      className={`w-full ${!type.includes("lead") ? "max-w-25rem" : ""} min-w-25rem`}
       style={{ maxWidth: "700px" }}
       content={({ hide }) => (
         <>
@@ -86,7 +87,7 @@ export const DialogComponent = ({
 
           <div
             className={`${
-              type === "lead"
+              type.includes("lead")
                 ? "p-dialog-content w-full flex flex-wrap gap-3 justify-content-center"
                 : "p-dialog-content flex flex-column gap-4 "
             }`}
@@ -97,7 +98,7 @@ export const DialogComponent = ({
                   className="w-full flex flex-column gap-2"
                   key={index}
                   style={
-                    type === "lead" ? { maxWidth: "calc(50% - 0.5rem)" } : {}
+                    type.includes("lead") ? { maxWidth: "calc(50% - 0.5rem)" } : {}
                   }
                 >
                   <h4 className="m-0">{input.label}</h4>
@@ -136,6 +137,7 @@ export const DialogComponent = ({
                             )
                       }
                       onChange={(e) => {
+                        console.log(e.value)
                         input.key === "offer_start" || input.key === "offer_end"
                           ? handleDialogInputChange(
                               input.key,
@@ -174,7 +176,7 @@ export const DialogComponent = ({
             <div className="flex">
               <Button
                 label={
-                  type === "add"
+                  type.includes("add")
                     ? "Добавить"
                     : type === "edit" ||
                       (type === "lead" && !isLeadDialogDisabled)
@@ -182,7 +184,7 @@ export const DialogComponent = ({
                     : "Отправить"
                 }
                 onClick={() =>
-                  type === "add" || type === "lead"
+                  type.includes("add") || type.includes("lead")
                     ? handleAdd(dialogInputObject)
                     : handleEdit(dialogInputObject)
                 }

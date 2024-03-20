@@ -63,6 +63,10 @@ function Domains() {
   ];
 
   useEffect(() => {
+    console.log(dialogInputObject)
+  }, [dialogInputObject])
+
+  useEffect(() => {
     renderDomains();
     getUsers()
       .then((response) => {

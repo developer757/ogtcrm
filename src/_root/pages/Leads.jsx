@@ -12,8 +12,8 @@ import {
   getFunnels,
   getLeads,
   getOffers,
+  getUsers,
   postLead,
-  postLeadWithoutIntegration,
 } from "../../utilities/api";
 import { statuses } from "../../utilities/statuses";
 import { ConfirmPopup } from "primereact/confirmpopup";
@@ -24,8 +24,10 @@ import { DialogComponent } from "../../components/DialogComponent";
 function Leads() {
   const [isLeadDialogVisible, setIsLeadDialogVisible] = useState(false);
   const [isLeadDialogDisabled, setIsLeadDialogDisabled] = useState(true);
+  const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [offers, setOffers] = useState([]);
   const [funnels, setFunnels] = useState([]);
+  const [users, setUsers] = useState([]);
   const [geos, setGeos] = useState([]);
   const [dialogInputObject, setDialogInputObject] = useState({
     full_name: "",
@@ -113,8 +115,9 @@ function Leads() {
     {
       label: "Пользователь",
       key: "user",
-      type: "text",
+      type: "dropdown",
       placeholder: "Пользователь",
+      options: users
     },
     {
       label: "Гео",
@@ -161,6 +164,9 @@ function Leads() {
       const updatedGeos = response.data.map(({ iso }) => iso);
       setGeos(updatedGeos);
     });
+    getUsers().then((response) => {
+      setUsers(response.data.map((obj) => obj.name));
+    });
   }, []);
 
   const renderLeads = () => {
@@ -190,7 +196,20 @@ function Leads() {
   const handleAddLead = () => {
     addLead(dialogInputObject)
       .then(function (response) {
-        setIsLeadDialogVisible(false)
+        setIsLeadDialogVisible(false);
+        showToast("success", response.data.message);
+        renderLeads();
+      })
+      .catch(function (error) {
+        console.log(error);
+        showToast("error", response.data.message);
+      });
+  };
+
+  const handlePostLead = () => {
+    postLead(dialogInputObject)
+      .then(function (response) {
+        setIsLeadDialogVisible(false);
         showToast("success", response.data.message);
         renderLeads();
       })
@@ -214,6 +233,10 @@ function Leads() {
 
     return formattedTimestamp;
   };
+
+  const formatTimestampForCalendar = (timestamp) => {
+    return new Date(timestamp)
+  }
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -266,11 +289,11 @@ function Leads() {
       const formattedDate = `${year}-${month}-${day}`;
       return formattedDate;
     } else if (option === "to Date") {
-      const dateString = timestamp;
-      const [year, month, day] = dateString.split("-");
-      const formattedDate = new Date(year, month - 1, day);
-
-      return formattedDate;
+      if(timestamp) {
+        const [year, month, day] = timestamp.split("-");
+        const formattedDate = new Date(year, month - 1, day);
+        return formattedDate;
+      }
     }
   };
 
@@ -371,6 +394,7 @@ function Leads() {
     });
     setIsLeadDialogVisible(true);
     setDialogInputObject({
+      id: rowData.id,
       full_name: rowData.full_name,
       domain: rowData.domain,
       email: rowData.email,
@@ -381,7 +405,7 @@ function Leads() {
       status: newestStatus,
       user: rowData.user,
       geo: rowData.geo,
-      created_at: rowData.created_at,
+      created_at: formatTimestampForCalendar(rowData.created_at),
       url_params: rowData.url_params,
     });
   };
@@ -496,6 +520,18 @@ function Leads() {
         setDialogInputObject={setDialogInputObject}
         isLeadDialogDisabled={isLeadDialogDisabled}
         setIsLeadDialogDisabled={setIsLeadDialogDisabled}
+        formatCalendarDate={formatTimestampForCalendar}
+        inputs={leadDialogInputs}
+        handleAdd={handlePostLead}
+      />
+
+      <DialogComponent
+        type="add lead"
+        isDialogVisible={isAddDialogVisible}
+        setIsDialogVisible={setIsAddDialogVisible}
+        header="Добавить лида"
+        dialogInputObject={dialogInputObject}
+        setDialogInputObject={setDialogInputObject}
         formatCalendarDate={formatCalendarDate}
         inputs={leadDialogInputs}
         handleAdd={handleAddLead}
@@ -513,9 +549,7 @@ function Leads() {
           <Button
             label="Добавить"
             icon="pi pi-plus"
-            onClick={() =>
-              dispatch({ type: "SET_IS_ADD_DIALOG_VISIBLE", payload: true })
-            }
+            onClick={() => setIsAddDialogVisible(true)}
           />
         </div>
         <DataTable

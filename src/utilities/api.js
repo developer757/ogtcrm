@@ -119,7 +119,7 @@ export const addSource = (sourceName) =>
 export const getLeads = () => axios.get(`http://25.18.88.64:8000/api/leads`);
 
 export const postLead = (dialogInputObject) =>
-  axios.post(`http://25.18.88.64:8000/api/offers/integra`, JSON.stringify(dialogInputObject));
+  axios.post(`http://25.18.88.64:8000/api/integration/valik`, dialogInputObject);
 
 export const addLead = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);

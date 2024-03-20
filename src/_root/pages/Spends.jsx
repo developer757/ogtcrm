@@ -284,11 +284,11 @@ function Spends() {
       const formattedDate = `${year}-${month}-${day}`;
       return formattedDate;
     } else if (option === "to Date") {
-      const dateString = timestamp;
-      const [year, month, day] = dateString.split("-");
-      const formattedDate = new Date(year, month - 1, day);
-
-      return formattedDate;
+      if (timestamp) {
+        const [year, month, day] = timestamp.split("-");
+        const formattedDate = new Date(year, month - 1, day);
+        return formattedDate;
+      }
     }
   };
 
