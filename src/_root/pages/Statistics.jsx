@@ -110,6 +110,215 @@ function Statistics() {
   console.log(leads);
   console.log(filteredData);
 
+  function handleTodayButtonClick() {
+    const currentDate = new Date();
+    setStartDate(
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate()
+      )
+    ); // Start of today (00:00)
+    setEndDate(
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+        23,
+        59,
+        59
+      )
+    ); // End of today (23:59)
+    setDates([
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate()
+      ),
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+        23,
+        59,
+        59
+      ),
+    ]);
+  }
+
+  function handleCurrentWeekButtonClick() {
+    const currentDate = new Date();
+    const startOfWeek = new Date(currentDate);
+    const endOfWeek = new Date(currentDate);
+    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+    endOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 6);
+    setStartDate(
+      new Date(
+        startOfWeek.getFullYear(),
+        startOfWeek.getMonth(),
+        startOfWeek.getDate()
+      )
+    ); // Start of the week (00:00)
+    setEndDate(
+      new Date(
+        endOfWeek.getFullYear(),
+        endOfWeek.getMonth(),
+        endOfWeek.getDate(),
+        23,
+        59,
+        59
+      )
+    ); // End of the week (23:59)
+    setDates([
+      new Date(
+        startOfWeek.getFullYear(),
+        startOfWeek.getMonth(),
+        startOfWeek.getDate()
+      ),
+      new Date(
+        endOfWeek.getFullYear(),
+        endOfWeek.getMonth(),
+        endOfWeek.getDate(),
+        23,
+        59,
+        59
+      ),
+    ]);
+  }
+
+  function handleLastWeekButtonClick() {
+    const currentDate = new Date();
+    const startOfLastWeek = new Date(currentDate);
+    const endOfLastWeek = new Date(currentDate);
+    startOfLastWeek.setDate(currentDate.getDate() - currentDate.getDay() - 7);
+    endOfLastWeek.setDate(currentDate.getDate() - currentDate.getDay() - 1);
+    setStartDate(
+      new Date(
+        startOfLastWeek.getFullYear(),
+        startOfLastWeek.getMonth(),
+        startOfLastWeek.getDate()
+      )
+    ); // Start of last week (00:00)
+    setEndDate(
+      new Date(
+        endOfLastWeek.getFullYear(),
+        endOfLastWeek.getMonth(),
+        endOfLastWeek.getDate(),
+        23,
+        59,
+        59
+      )
+    ); // End of last week (23:59)
+    setDates([
+      new Date(
+        startOfLastWeek.getFullYear(),
+        startOfLastWeek.getMonth(),
+        startOfLastWeek.getDate()
+      ),
+      new Date(
+        endOfLastWeek.getFullYear(),
+        endOfLastWeek.getMonth(),
+        endOfLastWeek.getDate(),
+        23,
+        59,
+        59
+      ),
+    ]);
+  }
+
+  function handleCurrentMonthButtonClick() {
+    const currentDate = new Date();
+    const startOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      1
+    );
+    const endOfMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0
+    );
+    setStartDate(
+      new Date(
+        startOfMonth.getFullYear(),
+        startOfMonth.getMonth(),
+        startOfMonth.getDate()
+      )
+    ); // Start of the month (00:00)
+    setEndDate(
+      new Date(
+        endOfMonth.getFullYear(),
+        endOfMonth.getMonth(),
+        endOfMonth.getDate(),
+        23,
+        59,
+        59
+      )
+    ); // End of the month (23:59)
+    setDates([
+      new Date(
+        startOfMonth.getFullYear(),
+        startOfMonth.getMonth(),
+        startOfMonth.getDate()
+      ),
+      new Date(
+        endOfMonth.getFullYear(),
+        endOfMonth.getMonth(),
+        endOfMonth.getDate(),
+        23,
+        59,
+        59
+      ),
+    ]);
+  }
+
+  function handleLastMonthButtonClick() {
+    const currentDate = new Date();
+    const startOfLastMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() - 1,
+      1
+    );
+    const endOfLastMonth = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      0
+    );
+    setStartDate(
+      new Date(
+        startOfLastMonth.getFullYear(),
+        startOfLastMonth.getMonth(),
+        startOfLastMonth.getDate()
+      )
+    ); // Start of last month (00:00)
+    setEndDate(
+      new Date(
+        endOfLastMonth.getFullYear(),
+        endOfLastMonth.getMonth(),
+        endOfLastMonth.getDate(),
+        23,
+        59,
+        59
+      )
+    ); // End of last month (23:59)
+
+    setDates([
+      new Date(
+        startOfLastMonth.getFullYear(),
+        startOfLastMonth.getMonth(),
+        startOfLastMonth.getDate()
+      ),
+      new Date(
+        endOfLastMonth.getFullYear(),
+        endOfLastMonth.getMonth(),
+        endOfLastMonth.getDate(),
+        23,
+        59,
+        59
+      )
+    ]);
+  }
+
   return (
     <div className="" style={{ maxWidth: "100%", margin: "0 auto" }}>
       <Toast ref={toast} />
@@ -117,11 +326,17 @@ function Statistics() {
       <div>
         <h2 className="m-0">Статистика</h2>
         <div className="card flex justify-content-between my-4">
-          <Button label="Сегодня" />
-          <Button label="Текущая неделя" />
-          <Button label="Прошлая неделя" />
-          <Button label="Текущий месяц" />
-          <Button label="Прошлый месяц" />
+          <Button label="Сегодня" onClick={handleTodayButtonClick} />
+          <Button
+            label="Текущая неделя"
+            onClick={handleCurrentWeekButtonClick}
+          />
+          <Button label="Прошлая неделя" onClick={handleLastWeekButtonClick} />
+          <Button
+            label="Текущий месяц"
+            onClick={handleCurrentMonthButtonClick}
+          />
+          <Button label="Прошлый месяц" onClick={handleLastMonthButtonClick} />
 
           <Calendar
             value={dates}
