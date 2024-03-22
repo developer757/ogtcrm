@@ -59,6 +59,11 @@ export const sidebarLinks = [
         icon: "pi-chart-pie",
         name: "Источники",
       },
+      {
+        to: "/logs",
+        icon: "pi-chart-pie",
+        name: "Логи брокеров",
+      },
     ],
   },
   {

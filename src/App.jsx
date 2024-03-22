@@ -10,6 +10,7 @@ import {
   Statistics,
   Leads,
   Dashboard,
+  Logs,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
@@ -30,6 +31,8 @@ function App() {
           <Route path="/sources" element={<Sources />} />
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/leads" element={<Leads />} />
+          <Route path="/logs" element={<Logs />} />
+
         </Route>
       </Routes>
     </>

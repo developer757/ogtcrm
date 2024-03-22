@@ -128,18 +128,20 @@ function Dashboard() {
       </div>
       <div className="flex flex-wrap gap-4">
         {offers.map((offer) => {
-          return (
-            <div className="flex flex-column align-items-center">
-              <h3>{offer.name}</h3>
-              <Knob
-                value={offer.current_cap}
-                max={offer.cap}
-                readOnly
-                size={100}
-                valueTemplate={`${offer.current_cap}/${offer.cap}`}
-              />
-            </div>
-          );
+          if (offer.active) {
+            return (
+              <div className="flex flex-column align-items-center">
+                <h3>{offer.name}</h3>
+                <Knob
+                  value={offer.current_cap}
+                  max={offer.cap}
+                  readOnly
+                  size={100}
+                  valueTemplate={`${offer.current_cap}/${offer.cap}`}
+                />
+              </div>
+            );
+          }
         })}
       </div>
 
