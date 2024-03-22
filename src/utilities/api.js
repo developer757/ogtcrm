@@ -38,10 +38,11 @@ export const getDomains = () =>
 export const deleteDomain = (id) =>
   axios.delete(`http://25.18.88.64:8000/api/domains/${id}`);
 
-export const addDomain = (domain) =>
+export const addDomain = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/domains/store`, {
-    domain: domain.name,
-    name: domain.user,
+    domain: dialogInputObject.name,
+    name: dialogInputObject.user.name,
+    user_id: dialogInputObject.user_id
   });
 
 export const editDomain = (domain, id) =>
@@ -119,10 +120,7 @@ export const addSource = (sourceName) =>
 export const getLeads = () => axios.get(`http://25.18.88.64:8000/api/leads`);
 
 export const postLead = (dialogInputObject) =>
-  axios.post(
-    `http://25.18.88.64:8000/api/integration/valik`,
-    dialogInputObject
-  );
+  axios.post(`http://25.18.88.64:8000/api/integration/valik`, dialogInputObject);
 
 export const addLead = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);
@@ -130,6 +128,3 @@ export const addLead = (dialogInputObject) =>
 export const getLeadStatus = () => {
   axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);
 };
-
-export const getLogs = (date) =>
-  axios.get(`http://25.18.88.64:8000/api/logs/${date}`);

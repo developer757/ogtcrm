@@ -20,6 +20,9 @@ export const DialogComponent = ({
   formatCalendarDate,
   formatCalendarTime,
   dispatch,
+  isDomainDropdown,
+  setSelectedUser,
+  selectedUser,
 }) => {
   const handleDialogInputChange = (field, value) => {
     setDialogInputObject((prevState) => ({
@@ -54,10 +57,12 @@ export const DialogComponent = ({
           });
         } else {
           setIsDialogVisible(false);
-          setDialogInputObject({})
+          setDialogInputObject({});
         }
       }}
-      className={`w-full ${!type.includes("lead") ? "max-w-25rem" : ""} min-w-25rem`}
+      className={`w-full ${
+        !type.includes("lead") ? "max-w-25rem" : ""
+      } min-w-25rem`}
       style={{ maxWidth: "700px" }}
       content={({ hide }) => (
         <>
@@ -98,7 +103,9 @@ export const DialogComponent = ({
                   className="w-full flex flex-column gap-2"
                   key={index}
                   style={
-                    type.includes("lead") ? { maxWidth: "calc(50% - 0.5rem)" } : {}
+                    type.includes("lead")
+                      ? { maxWidth: "calc(50% - 0.5rem)" }
+                      : {}
                   }
                 >
                   <h4 className="m-0">{input.label}</h4>
@@ -115,10 +122,13 @@ export const DialogComponent = ({
                   ) : input.type === "dropdown" ? (
                     <Dropdown
                       value={dialogInputObject[input.key]}
-                      onChange={(e) =>
-                        handleDialogInputChange(input.key, e.target.value)
-                      }
+                      onChange={(e) => {
+                        isDomainDropdown
+                          ? setSelectedUser(e.value)
+                          : handleDialogInputChange(input.key, e.target.value)
+                      }}
                       options={input.options}
+                      {...(isDomainDropdown ? { optionLabel: "name" } : {})}
                       placeholder={input.placeholder}
                       className="w-full"
                       disabled={isLeadDialogDisabled}
@@ -137,7 +147,7 @@ export const DialogComponent = ({
                             )
                       }
                       onChange={(e) => {
-                        console.log(e.value)
+                        console.log(e.value);
                         input.key === "offer_start" || input.key === "offer_end"
                           ? handleDialogInputChange(
                               input.key,

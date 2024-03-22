@@ -23,6 +23,7 @@ function Domains() {
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null)
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -33,10 +34,21 @@ function Domains() {
 
   const [dialogInputObject, setDialogInputObject] = useState({
     name: "",
-    user: "",
+    user: {},
+    user_id: "",
   });
 
   const toast = useRef(null);
+
+  useEffect(() => {
+    if (selectedUser) {
+      setDialogInputObject((prevState) => ({
+        ...prevState,
+        user: selectedUser,
+        user_id: selectedUser.id,
+      }));
+    }
+  }, [selectedUser])
 
   const showToast = (severity, text) => {
     toast.current.show({
@@ -63,20 +75,32 @@ function Domains() {
   ];
 
   useEffect(() => {
-    console.log(dialogInputObject)
+    console.log("dialogInputObject", dialogInputObject)
   }, [dialogInputObject])
+
+  useEffect(() => {
+    console.log("users", users)
+  }, [users])
+
+  useEffect(() => {
+    console.log("selectedUser", selectedUser)
+  }, [selectedUser])
 
   useEffect(() => {
     renderDomains();
     getUsers()
       .then((response) => {
-        setUsers(response.data.map((obj) => obj.name));
+        setUsers(response.data.map(obj => getUpdatedUsers(obj)));
       })
       .catch((error) => {
         console.log(error);
         showToast("error", "Ошибка при загрузке пользователей");
       });
   }, []);
+
+  const getUpdatedUsers = (obj) => {
+    return {id: obj.id, name: obj.name}
+  }
 
   const renderDomains = () => {
     getDomains()
@@ -150,7 +174,6 @@ function Domains() {
   };
 
   const handleEdit = (event, domains) => {
-    console.log(domains);
     setCurrentRowData(domains.id);
     setIsEditDialogVisible(true);
     setDialogInputObject({
@@ -207,7 +230,6 @@ function Domains() {
   };
 
   const representativeFilterTemplate = (options) => {
-    console.log(options.value, options);
     return (
       <MultiSelect
         value={options.value}
@@ -222,7 +244,6 @@ function Domains() {
   };
 
   const representativeBodyTemplate = (rowData) => {
-    console.log(rowData);
 
     return (
       <div className="flex align-items-center gap-2">
@@ -274,17 +295,20 @@ function Domains() {
           type="add"
           isDialogVisible={isAddDialogVisible}
           setIsDialogVisible={setIsAddDialogVisible}
-          header={"Добавить домен"}
+          header="Добавить домен"
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
           handleAdd={addNewDomain}
+          isDomainDropdown={true}
+          setSelectedUser={setSelectedUser}
+          selectedUser={selectedUser}
         />
         <DialogComponent
           type="edit"
           isDialogVisible={isEditDialogVisible}
           setIsDialogVisible={setIsEditDialogVisible}
-          header={"Редактировать домен"}
+          header="Редактировать домен"
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
