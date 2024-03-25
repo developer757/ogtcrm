@@ -4,6 +4,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
 import { MultiSelect } from "primereact/multiselect";
+import { InputSwitch } from "primereact/inputswitch";
 
 export const DialogComponent = ({
   type,
@@ -125,7 +126,7 @@ export const DialogComponent = ({
                       onChange={(e) => {
                         isDomainDropdown
                           ? setSelectedUser(e.value)
-                          : handleDialogInputChange(input.key, e.target.value)
+                          : handleDialogInputChange(input.key, e.target.value);
                       }}
                       options={input.options}
                       {...(isDomainDropdown ? { optionLabel: "name" } : {})}
@@ -176,6 +177,13 @@ export const DialogComponent = ({
                       maxSelectedLabels={3}
                       className="w-full"
                       placeholder={input.placeholder}
+                    />
+                  ) : input.type === "switch" ? (
+                    <InputSwitch
+                      checked={Boolean(dialogInputObject[input.key])}
+                      onChange={(e) => {
+                        handleDialogInputChange(input.key, e.value);
+                      }}
                     />
                   ) : (
                     <span>Другой тип input</span>

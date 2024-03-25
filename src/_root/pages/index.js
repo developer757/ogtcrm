@@ -9,3 +9,4 @@ export { default as Leads } from "./Leads";
 export { default as Dashboard } from "./Dashboard";
 export { default as Logs } from "./Logs";
 export { default as Duplicates } from "./Duplicates";
+export { default as Statuses } from "./Statuses";

@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 
 import {
   Domains,
@@ -12,6 +17,7 @@ import {
   Dashboard,
   Logs,
   Duplicates,
+  Statuses,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
@@ -34,7 +40,7 @@ function App() {
           <Route path="/leads" element={<Leads />} />
           <Route path="/logs" element={<Logs />} />
           <Route path="/duplicates" element={<Duplicates />} />
-
+          <Route path="/statuses" element={<Statuses />} />
         </Route>
       </Routes>
     </>

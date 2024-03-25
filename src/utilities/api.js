@@ -42,7 +42,7 @@ export const addDomain = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/domains/store`, {
     domain: dialogInputObject.name,
     name: dialogInputObject.user.name,
-    user_id: dialogInputObject.user_id
+    user_id: dialogInputObject.user_id,
   });
 
 export const editDomain = (domain, id) =>
@@ -120,7 +120,10 @@ export const addSource = (sourceName) =>
 export const getLeads = () => axios.get(`http://25.18.88.64:8000/api/leads`);
 
 export const postLead = (dialogInputObject) =>
-  axios.post(`http://25.18.88.64:8000/api/integration/valik`, dialogInputObject);
+  axios.post(
+    `http://25.18.88.64:8000/api/integration/valik`,
+    dialogInputObject
+  );
 
 export const addLead = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);
@@ -131,3 +134,15 @@ export const getLeadStatus = () => {
 
 export const getLogs = (date) =>
   axios.get(`http://25.18.88.64:8000/api/logs/${date}`);
+
+export const getStatuses = () =>
+  axios.get(`http://25.18.88.64:8000/api/status`);
+
+export const addStatus = (dialogInputObject) =>
+  axios.post(`http://25.18.88.64:8000/api/status/store`, dialogInputObject);
+
+export const deleteStatus = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/status/${id}`);
+
+  export const editStatus = (dialogInputObject, id) =>
+  axios.put(`http://25.18.88.64:8000/api/status/update/${id}`, dialogInputObject);
