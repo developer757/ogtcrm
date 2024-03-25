@@ -7,7 +7,6 @@ import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
 import {
   addLead,
-  deleteOffer,
   getCountries,
   getFunnels,
   getLeads,
@@ -15,6 +14,7 @@ import {
   getUsers,
   postLead,
 } from "../../utilities/api";
+import { deleteLead } from "../../utilities/api";
 import { statuses } from "../../utilities/statuses";
 import { ConfirmPopup } from "primereact/confirmpopup";
 import { confirmPopup } from "primereact/confirmpopup";
@@ -22,6 +22,7 @@ import { Dialog } from "primereact/dialog";
 import { DialogComponent } from "../../components/DialogComponent";
 
 function Leads() {
+  const [leads, setLeads] = useState([]);
   const [isLeadDialogVisible, setIsLeadDialogVisible] = useState(false);
   const [isLeadDialogDisabled, setIsLeadDialogDisabled] = useState(true);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
@@ -29,6 +30,7 @@ function Leads() {
   const [funnels, setFunnels] = useState([]);
   const [users, setUsers] = useState([]);
   const [geos, setGeos] = useState([]);
+  const [selectedLeadID, setSelectedLeadID] = useState(null);
   const [dialogInputObject, setDialogInputObject] = useState({
     full_name: "",
     domain: "",
@@ -53,10 +55,8 @@ function Leads() {
     }
   };
   const [state, dispatch] = useReducer(reducer, {
-    leads: [],
     isParameterDialogVisible: false,
     isLeadDialogVisible: false,
-    selectedLeadID: null,
     selectedURLParams: [],
   });
 
@@ -117,7 +117,7 @@ function Leads() {
       key: "user",
       type: "dropdown",
       placeholder: "Пользователь",
-      options: users
+      options: users,
     },
     {
       label: "Гео",
@@ -171,26 +171,22 @@ function Leads() {
 
   const renderLeads = () => {
     getLeads().then(function (response) {
-      dispatch({
-        type: "SET_PROPERTY",
-        property: "leads",
-        payload: response.data,
-      });
+      setLeads(response.data);
       console.log(response);
     });
   };
 
   const handleDeleteActionClick = (e, rowData) => {
     showConfirmDeletePopUp(e);
-    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: rowData.id });
+    setSelectedLeadID(rowData.id);
   };
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
     option === "delete"
-      ? handleDeleteOffer(state.selectedOfferID)
-      : showToast("info", "Удаление оффера отменено"),
+      ? handleDeleteLead(selectedLeadID)
+      : showToast("info", "Удаление лида отменено"),
       hide();
-    dispatch({ type: "SET_SELECTED_OFFER_ID", payload: null });
+    setSelectedLeadID(null);
   };
 
   const handleAddLead = () => {
@@ -219,6 +215,19 @@ function Leads() {
       });
   };
 
+  const handleDeleteLead = () => {
+    deleteLead(selectedLeadID)
+      .then(function (response) {
+        console.log(response);
+        showToast("success", response.data.message);
+        renderLeads();
+      })
+      .catch(function (error) {
+        showToast("error", response.data.message);
+        console.log(error);
+      });
+  };
+
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
 
@@ -235,8 +244,8 @@ function Leads() {
   };
 
   const formatTimestampForCalendar = (timestamp) => {
-    return new Date(timestamp)
-  }
+    return new Date(timestamp);
+  };
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
@@ -253,19 +262,6 @@ function Leads() {
       detail: text,
       life: 2000,
     });
-  };
-
-  const handleDeleteOffer = () => {
-    deleteOffer(state.selectedOfferID)
-      .then(function (response) {
-        console.log(response);
-        showToast("success", response.data.message);
-        renderLeads();
-      })
-      .catch(function (error) {
-        showToast("error", response.data.message);
-        console.log(error);
-      });
   };
 
   const showConfirmDeletePopUp = (e) => {
@@ -289,7 +285,7 @@ function Leads() {
       const formattedDate = `${year}-${month}-${day}`;
       return formattedDate;
     } else if (option === "to Date") {
-      if(timestamp) {
+      if (timestamp) {
         const [year, month, day] = timestamp.split("-");
         const formattedDate = new Date(year, month - 1, day);
         return formattedDate;
@@ -300,11 +296,6 @@ function Leads() {
   const actionButtonsTemplate = (rowData) => {
     return (
       <div className="flex gap-3">
-        <Button
-          icon="pi pi-pencil"
-          severity="success"
-          onClick={(e) => handleEditActionClick(rowData)}
-        />
         <Button
           icon="pi pi-trash"
           severity="danger"
@@ -365,11 +356,7 @@ function Leads() {
   };
 
   const handleURLParameterClick = (rowData, selectedURLParamsArray) => {
-    dispatch({
-      type: "SET_PROPERTY",
-      property: "selectedLeadID",
-      payload: rowData.id,
-    });
+    setSelectedLeadID(rowData.id);
     dispatch({
       type: "SET_PROPERTY",
       property: "isParameterDialogVisible",
@@ -387,11 +374,7 @@ function Leads() {
     const parsedStatusArray = JSON.parse(rowData.status);
     const newestStatus = parsedStatusArray[parsedStatusArray.length - 1];
     console.log(newestStatus);
-    dispatch({
-      type: "SET_PROPERTY",
-      property: "selectedLeadID",
-      payload: rowData.id,
-    });
+    setSelectedLeadID(rowData.id);
     setIsLeadDialogVisible(true);
     setDialogInputObject({
       id: rowData.id,
@@ -428,20 +411,7 @@ function Leads() {
         onClick={() => {
           handleURLParameterClick(rowData, selectedURLParamsArray);
         }}
-      >
-        {splittedURLParams[0]}
-      </div>
-    );
-  };
-
-  const actionBodyTemplate = (rowData) => {
-    return (
-      <Button
-        onClick={() => console.log("lol")}
-        icon="pi pi-trash"
-        className="p-button-danger"
-        style={{ maxWidth: "48px", margin: "0 auto" }}
-      />
+      ></div>
     );
   };
 
@@ -462,8 +432,10 @@ function Leads() {
   };
 
   const statusTemplate = (rowData) => {
+    console.log("rowData", rowData);
     const parsedArray = JSON.parse(rowData.status);
-    return <div>{parsedArray[parsedArray.length - 1]}</div>;
+    console.log(parsedArray);
+    // return <div>{parsedArray[parsedArray.length - 1]}</div>;
   };
 
   const phoneTemplate = (rowData) => {
@@ -553,7 +525,7 @@ function Leads() {
           />
         </div>
         <DataTable
-          value={state.leads}
+          value={leads}
           paginator
           header={headerTemplate}
           rows={10}
@@ -602,8 +574,7 @@ function Leads() {
           <Column
             field="category"
             header="Действие"
-            body={actionBodyTemplate}
-            style={{ width: "30%" }}
+            body={actionButtonsTemplate}
           ></Column>
         </DataTable>
       </div>

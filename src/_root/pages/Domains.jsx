@@ -23,7 +23,7 @@ function Domains() {
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState({});
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -48,7 +48,8 @@ function Domains() {
         user_id: selectedUser.id,
       }));
     }
-  }, [selectedUser])
+    console.log("selectedUser", selectedUser)
+  }, [selectedUser]);
 
   const showToast = (severity, text) => {
     toast.current.show({
@@ -75,22 +76,22 @@ function Domains() {
   ];
 
   useEffect(() => {
-    console.log("dialogInputObject", dialogInputObject)
-  }, [dialogInputObject])
+    console.log("dialogInputObject", dialogInputObject);
+  }, [dialogInputObject]);
 
   useEffect(() => {
-    console.log("users", users)
-  }, [users])
+    console.log("users", users);
+  }, [users]);
 
   useEffect(() => {
-    console.log("selectedUser", selectedUser)
-  }, [selectedUser])
+    console.log("selectedUser", selectedUser);
+  }, [selectedUser]);
 
   useEffect(() => {
     renderDomains();
     getUsers()
       .then((response) => {
-        setUsers(response.data.map(obj => getUpdatedUsers(obj)));
+        setUsers(response.data.map((obj) => getUpdatedUsers(obj)));
       })
       .catch((error) => {
         console.log(error);
@@ -99,8 +100,8 @@ function Domains() {
   }, []);
 
   const getUpdatedUsers = (obj) => {
-    return {id: obj.id, name: obj.name}
-  }
+    return { id: obj.id, name: obj.name };
+  };
 
   const renderDomains = () => {
     getDomains()
@@ -173,12 +174,15 @@ function Domains() {
       });
   };
 
-  const handleEdit = (event, domains) => {
-    setCurrentRowData(domains.id);
+  const handleEdit = (rowData) => {
+    const userObject = users.find((obj) => obj.name === rowData.name);
+    setCurrentRowData(rowData.id);
     setIsEditDialogVisible(true);
+    setSelectedUser(userObject)
     setDialogInputObject({
-      name: domains.domain,
-      user: domains.name,
+      name: rowData.domain,
+      user: userObject,
+      user_id: userObject.id,
     });
   };
 
@@ -217,7 +221,7 @@ function Domains() {
           icon="pi pi-pencil"
           severity="success"
           aria-label="Search"
-          onClick={(e) => handleEdit(e, rowData)}
+          onClick={(e) => handleEdit(rowData)}
         />
 
         <Button
@@ -244,7 +248,6 @@ function Domains() {
   };
 
   const representativeBodyTemplate = (rowData) => {
-
     return (
       <div className="flex align-items-center gap-2">
         <span>{rowData.name}</span>
@@ -312,7 +315,9 @@ function Domains() {
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
+          isDomainDropdown={true}
           handleEdit={editCurrentDomain}
+          setSelectedUser={setSelectedUser}
         />
       </div>
 

@@ -1,6 +1,5 @@
 export const statuses = [
   "No send",
-  "No Send",
   "New",
   "Potential",
   "No answer",

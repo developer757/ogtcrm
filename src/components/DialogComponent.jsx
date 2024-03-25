@@ -23,7 +23,6 @@ export const DialogComponent = ({
   dispatch,
   isDomainDropdown,
   setSelectedUser,
-  selectedUser,
 }) => {
   const handleDialogInputChange = (field, value) => {
     setDialogInputObject((prevState) => ({

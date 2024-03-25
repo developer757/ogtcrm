@@ -45,10 +45,11 @@ export const addDomain = (dialogInputObject) =>
     user_id: dialogInputObject.user_id,
   });
 
-export const editDomain = (domain, id) =>
+export const editDomain = (dialogInputObject, id) =>
   axios.put(`http://25.18.88.64:8000/api/domains/update/${id}`, {
-    domain: domain.name,
-    name: domain.user,
+    domain: dialogInputObject.name,
+    name: dialogInputObject.user.name,
+    user_id: dialogInputObject.user_id,
   });
 
 export const getSpends = () => axios.get(`http://25.18.88.64:8000/api/spends`);
@@ -127,6 +128,10 @@ export const postLead = (dialogInputObject) =>
 
 export const addLead = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);
+
+  export const deleteLead = (id) => {
+    axios.delete(`http://25.18.88.64:8000/api/leads/${id}`);
+  };
 
 export const getLeadStatus = () => {
   axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);
