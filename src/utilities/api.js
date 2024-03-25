@@ -128,3 +128,6 @@ export const addLead = (dialogInputObject) =>
 export const getLeadStatus = () => {
   axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);
 };
+
+export const getLogs = (date) =>
+  axios.get(`http://25.18.88.64:8000/api/logs/${date}`);

@@ -11,6 +11,7 @@ import {
   Leads,
   Dashboard,
   Logs,
+  Duplicates,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/logs" element={<Logs />} />
+          <Route path="/duplicates" element={<Duplicates />} />
 
         </Route>
       </Routes>

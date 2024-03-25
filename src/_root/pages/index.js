@@ -8,4 +8,4 @@ export { default as Statistics } from "./Statistics";
 export { default as Leads } from "./Leads";
 export { default as Dashboard } from "./Dashboard";
 export { default as Logs } from "./Logs";
-
+export { default as Duplicates } from "./Duplicates";
