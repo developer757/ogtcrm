@@ -180,7 +180,6 @@ function Spends() {
         })
         .catch(function (error) {
           console.log(error);
-          э;
           showToast("error", "Ошибка добавления расхода");
         });
     } else {

@@ -435,7 +435,7 @@ function Leads() {
     console.log("rowData", rowData);
     const parsedArray = JSON.parse(rowData.status);
     console.log(parsedArray);
-    // return <div>{parsedArray[parsedArray.length - 1]}</div>;
+    return <div>{parsedArray}</div>;
   };
 
   const phoneTemplate = (rowData) => {

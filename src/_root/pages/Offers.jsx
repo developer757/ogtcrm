@@ -22,6 +22,8 @@ import { Chip } from "primereact/chip";
 import { InputSwitch } from "primereact/inputswitch";
 
 function Offers() {
+  const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
+  const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [dialogInputObject, setDialogInputObject] = useState({
     name: "",
     cap: "",
@@ -51,8 +53,6 @@ function Offers() {
   const [state, dispatch] = useReducer(reducer, {
     offers: null,
     selectedOfferID: null,
-    isAddDialogVisible: false,
-    isEditDialogVisible: false,
     funnels: [],
     geos: [],
     activityChecked: [],
@@ -241,11 +241,7 @@ function Offers() {
       source: JSON.parse(rowData.source),
     });
 
-    dispatch({
-      type: "SET_PROPERTY",
-      property: "isEditDialogVisible",
-      payload: true,
-    });
+    setIsEditDialogVisible(true);
     dispatch({
       type: "SET_PROPERTY",
       property: "selectedOfferID",
@@ -336,11 +332,7 @@ function Offers() {
     ) {
       addOffer(dialogInputObject)
         .then(function (response) {
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isAddDialogVisible",
-            payload: false,
-          });
+          setIsAddDialogVisible(false);
           showToast("success", response.data.message);
           renderOffers();
         })
@@ -374,11 +366,7 @@ function Offers() {
       editOffer(dialogInputObject, state.selectedOfferID)
         .then(function (response) {
           showToast("success", response.data.message);
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isEditDialogVisible",
-            payload: false,
-          });
+          setIsEditDialogVisible(false);
           renderOffers();
         })
         .catch(function (error) {
@@ -553,26 +541,26 @@ function Offers() {
 
       <DialogComponent
         type="add"
-        isDialogVisible={state.isAddDialogVisible}
-        header={"Добавить оффер"}
+        isDialogVisible={isAddDialogVisible}
+        setIsDialogVisible={setIsAddDialogVisible}
+        header="Добавить оффер"
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={addDialogInputs}
         handleAdd={handleAddOffer}
         formatCalendarTime={formatCalendarTime}
-        dispatch={dispatch}
       />
 
       <DialogComponent
         type="edit"
-        isDialogVisible={state.isEditDialogVisible}
-        header={"Изменить оффер"}
+        isDialogVisible={isEditDialogVisible}
+        setIsDialogVisible={setIsEditDialogVisible}
+        header="Изменить оффер"
         dialogInputObject={dialogInputObject}
         setDialogInputObject={setDialogInputObject}
         inputs={editDialogInputs}
         handleEdit={handleEditOffer}
         formatCalendarTime={formatCalendarTime}
-        dispatch={dispatch}
       />
 
       <div className="flex flex-column align-items-center justify-content-center">
@@ -584,13 +572,7 @@ function Offers() {
           <Button
             label="Добавить"
             icon="pi pi-plus"
-            onClick={() =>
-              dispatch({
-                type: "SET_PROPERTY",
-                property: "isAddDialogVisible",
-                payload: true,
-              })
-            }
+            onClick={() => setIsAddDialogVisible(true)}
           />
         </div>
         <DataTable

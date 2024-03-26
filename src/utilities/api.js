@@ -129,9 +129,8 @@ export const postLead = (dialogInputObject) =>
 export const addLead = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/leads/store`, dialogInputObject);
 
-  export const deleteLead = (id) => {
-    axios.delete(`http://25.18.88.64:8000/api/leads/${id}`);
-  };
+export const deleteLead = (id) =>
+  axios.delete(`http://25.18.88.64:8000/api/leads/${id}`);
 
 export const getLeadStatus = () => {
   axios.get(`http://25.18.88.64:8000/api/offers/leadsStatus`);
@@ -149,5 +148,8 @@ export const addStatus = (dialogInputObject) =>
 export const deleteStatus = (id) =>
   axios.delete(`http://25.18.88.64:8000/api/status/${id}`);
 
-  export const editStatus = (dialogInputObject, id) =>
-  axios.put(`http://25.18.88.64:8000/api/status/update/${id}`, dialogInputObject);
+export const editStatus = (dialogInputObject, id) =>
+  axios.put(
+    `http://25.18.88.64:8000/api/status/update/${id}`,
+    dialogInputObject
+  );

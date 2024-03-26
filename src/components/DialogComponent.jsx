@@ -20,7 +20,6 @@ export const DialogComponent = ({
   handleEdit,
   formatCalendarDate,
   formatCalendarTime,
-  dispatch,
   isDomainDropdown,
   setSelectedUser,
 }) => {
@@ -39,26 +38,8 @@ export const DialogComponent = ({
       resizable={false}
       draggable={false}
       onHide={() => {
-        if (dispatch) {
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isAddDialogVisible",
-            payload: false,
-          });
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isEditDialogVisible",
-            payload: false,
-          });
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isLeadDialogVisible",
-            payload: false,
-          });
-        } else {
-          setIsDialogVisible(false);
-          setDialogInputObject({});
-        }
+        setIsDialogVisible(false);
+        setDialogInputObject({});
       }}
       className={`w-full ${
         !type.includes("lead") ? "max-w-25rem" : ""

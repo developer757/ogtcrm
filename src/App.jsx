@@ -20,6 +20,7 @@ import {
   Statuses,
 } from "./_root/pages";
 import RootLayout from "./_root/RootLayout";
+import "./App.css"
 
 function App() {
   return (
