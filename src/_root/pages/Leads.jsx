@@ -31,6 +31,13 @@ function Leads() {
   const [users, setUsers] = useState([]);
   const [geos, setGeos] = useState([]);
   const [selectedLeadID, setSelectedLeadID] = useState(null);
+  const [isParameterDialogVisible, setIsParameterDialogVisible] =
+    useState(false);
+  const [selectedURLParams, setSelectedURLParams] = useState([]);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [dialogInputObject, setDialogInputObject] = useState({
     full_name: "",
     domain: "",
@@ -44,20 +51,6 @@ function Leads() {
     geo: [],
     created_at: "",
     url_params: "",
-  });
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case "SET_PROPERTY":
-        return {
-          ...state,
-          [action.property]: action.payload,
-        };
-    }
-  };
-  const [state, dispatch] = useReducer(reducer, {
-    isParameterDialogVisible: false,
-    isLeadDialogVisible: false,
-    selectedURLParams: [],
   });
 
   const leadDialogInputs = [
@@ -146,9 +139,6 @@ function Leads() {
     console.log("dialogInputObject: ", dialogInputObject);
   }, [dialogInputObject]);
 
-  useEffect(() => {
-    console.log("state: ", state);
-  }, [state]);
 
   useEffect(() => {
     renderLeads();
@@ -249,11 +239,11 @@ function Leads() {
 
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
-    let _filters = { ...state.filters };
+    let _filters = { ...filters };
     _filters["global"].value = value;
 
-    dispatch({ type: "SET_FILTERS", payload: _filters });
-    dispatch({ type: "SET_GLOBAL_FILTER_VALUE", payload: value });
+    setFilters(_filters);
+    setGlobalFilterValue(value);
   };
 
   const showToast = (severity, text) => {
@@ -311,7 +301,7 @@ function Leads() {
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText
-            value={state.globalFilterValue}
+            value={globalFilterValue}
             onChange={onGlobalFilterChange}
             placeholder="Поиск"
           />
@@ -357,16 +347,8 @@ function Leads() {
 
   const handleURLParameterClick = (rowData, selectedURLParamsArray) => {
     setSelectedLeadID(rowData.id);
-    dispatch({
-      type: "SET_PROPERTY",
-      property: "isParameterDialogVisible",
-      payload: true,
-    });
-    dispatch({
-      type: "SET_PROPERTY",
-      property: "selectedURLParams",
-      payload: selectedURLParamsArray,
-    });
+    setIsParameterDialogVisible(true);
+    setSelectedURLParams(selectedURLParamsArray);
   };
 
   const handlePhoneClick = (rowData) => {
@@ -461,23 +443,15 @@ function Leads() {
       <Dialog
         className="w-full max-w-25rem min-w-25rem"
         header="Параметры"
-        visible={state.isParameterDialogVisible}
+        visible={isParameterDialogVisible}
         resizable={false}
         draggable={false}
         onHide={() => {
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "selectedLeadID",
-            payload: null,
-          });
-          dispatch({
-            type: "SET_PROPERTY",
-            property: "isParameterDialogVisible",
-            payload: false,
-          });
+          setSelectedLeadID(null);
+          setIsParameterDialogVisible(false);
         }}
       >
-        <DataTable value={state.selectedURLParams} stripedRows showGridlines>
+        <DataTable value={selectedURLParams} stripedRows showGridlines>
           <Column field="parameter" header="Параметр"></Column>
           <Column field="value" header="Значение"></Column>
         </DataTable>
@@ -533,7 +507,7 @@ function Leads() {
           showGridlines
           rowsPerPageOptions={[5, 10, 25, 50]}
           paginatorPosition="top"
-          filters={state.filters}
+          filters={filters}
           style={{ width: "90%" }}
         >
           <Column field="id" header="ID"></Column>

@@ -17,6 +17,7 @@ import { confirmPopup } from "primereact/confirmpopup";
 import { DialogComponent } from "../../components/DialogComponent";
 
 function Spends() {
+  const [selectedUser, setSelectedUser] = useState(null);
   const [spends, setSpends] = useState(null);
   const [selectedSpendID, setSelectedSpendID] = useState(null);
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
@@ -30,6 +31,7 @@ function Spends() {
     name: "",
     summary: "",
     date: "",
+    user_id: "",
   });
 
   const toast = useRef(null);
@@ -41,6 +43,25 @@ function Spends() {
       life: 2000,
     });
   };
+
+  useEffect(() => {
+    if (selectedUser) {
+      setDialogInputObject((prevState) => ({
+        ...prevState,
+        name: selectedUser,
+        user_id: selectedUser.id,
+      }));
+    }
+    console.log("selectedUser", selectedUser);
+  }, [selectedUser]);
+
+  useEffect(() => {
+    console.log("dialogInputObject: ", dialogInputObject);
+  }, [dialogInputObject]);
+
+  useEffect(() => {
+    console.log("users: ", users);
+  }, [users]);
 
   const addDialogInputs = [
     {
@@ -61,7 +82,6 @@ function Spends() {
       key: "date",
       type: "calendar",
       placeholder: "Выберите дату",
-      options: users,
     },
   ];
 
@@ -89,11 +109,15 @@ function Spends() {
 
   useEffect(() => {
     getUsers().then((response) => {
-      setUsers(response.data.map((obj) => obj.name));
+      setUsers(response.data.map((obj) => getUpdatedUsers(obj)));
     });
     console.log(users);
     renderSpends();
   }, []);
+
+  const getUpdatedUsers = (obj) => {
+    return { id: obj.id, name: obj.name };
+  };
 
   const renderSpends = () => {
     getSpends().then(function (response) {
@@ -102,19 +126,21 @@ function Spends() {
     });
   };
 
-  const handleTogglePopUp = (option, e, rowData) => {
-    console.log(rowData);
-    if (option === "add") {
-      showConfirmDeletePopUp(e);
-    } else {
-      setDialogInputObject({
-        name: rowData.name,
-        summary: rowData.summary,
-        date: rowData.date,
-      });
-      setIsEditDialogVisible(true);
-    }
-    setSelectedSpendID(rowData.id);
+  const handleEditActionClick = (rowData) => {
+    const userObject = users.find((obj) => obj.name === rowData.name);
+    // setSelectedUser(userObject)
+    // setDialogInputObject({
+    //   name: rowData.name,
+    //   summary: rowData.summary,
+    //   date: rowData.date,
+    //   user_id: userObject.id,
+    // });
+    setIsEditDialogVisible(true);
+  };
+
+  const handleDeleteActionClick = (e, rowData) => {
+    showConfirmDeletePopUp(e);
+    setSelectedSpendID(rowData.id)
   };
 
   const handleConfirmPopUpButtonClick = (option, hide) => {
@@ -125,20 +151,18 @@ function Spends() {
     setSelectedSpendID(null);
   };
 
-  const actionButtonsTemplate = (spends) => {
+  const actionButtonsTemplate = (rowData) => {
     return (
       <div className="flex gap-3">
         <Button
           icon="pi pi-pencil"
           severity="success"
-          aria-label="Search"
-          onClick={(e) => handleTogglePopUp("edit", e, spends)}
+          onClick={(e) => handleEditActionClick(rowData)}
         />
         <Button
           icon="pi pi-trash"
           severity="danger"
-          aria-label="Cancel"
-          onClick={(e) => handleTogglePopUp("add", e, spends)}
+          onClick={(e) => handleDeleteActionClick(e, rowData)}
         />
       </div>
     );
@@ -169,8 +193,8 @@ function Spends() {
     );
   };
 
-  const handleAddSpend = ({ name, summary, date }) => {
-    if (name !== "" && summary !== "" && date !== "") {
+  const handleAddSpend = ({ name, summary, date, user_id }) => {
+    if (name !== "" && summary !== "" && date !== "" & user_id !== "") {
       addSpend(dialogInputObject)
         .then(function (response) {
           setIsAddDialogVisible(false);
@@ -291,6 +315,13 @@ function Spends() {
     }
   };
 
+  const dateTemplate = (rowData) => {
+    const dateString = rowData.date;
+    const splittedDateString = dateString.split("-");
+    const formattedDateString = `${splittedDateString[2]}-${splittedDateString[1]}-${splittedDateString[0]}`;
+    return formattedDateString;
+  };
+
   return (
     <>
       <Toast ref={toast} />
@@ -306,6 +337,8 @@ function Spends() {
         inputs={addDialogInputs}
         handleAdd={handleAddSpend}
         formatCalendarDate={formatCalendarDate}
+        setSelectedUser={setSelectedUser}
+        isUserIDDropdown={true}
       />
 
       <DialogComponent
@@ -347,7 +380,7 @@ function Spends() {
           <Column field="id" header="ID"></Column>
           <Column field="name" header="Имя"></Column>
           <Column field="summary" header="Сумма"></Column>
-          <Column field="date" header="Дата"></Column>
+          <Column field="date" header="Дата" body={dateTemplate}></Column>
           <Column
             header="Действия"
             body={(spends) => actionButtonsTemplate(spends)}

@@ -56,9 +56,10 @@ export const getSpends = () => axios.get(`http://25.18.88.64:8000/api/spends`);
 
 export const addSpend = (dialogInputObject) =>
   axios.post(`http://25.18.88.64:8000/api/spends/store`, {
-    name: dialogInputObject.name,
+    name: dialogInputObject.name.name,
     summary: dialogInputObject.summary,
     date: dialogInputObject.date,
+    user_id: dialogInputObject.user_id,
   });
 
 export const deleteSpend = (id) =>

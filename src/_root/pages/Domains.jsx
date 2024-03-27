@@ -23,7 +23,7 @@ function Domains() {
   const [isAddDialogVisible, setIsAddDialogVisible] = useState(false);
   const [isEditDialogVisible, setIsEditDialogVisible] = useState(false);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState({});
+  const [selectedUser, setSelectedUser] = useState(null);
   const [currentRowData, setCurrentRowData] = useState(null);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -303,9 +303,8 @@ function Domains() {
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
           handleAdd={addNewDomain}
-          isDomainDropdown={true}
+          isUserIDDropdown={true}
           setSelectedUser={setSelectedUser}
-          selectedUser={selectedUser}
         />
         <DialogComponent
           type="edit"
@@ -315,7 +314,7 @@ function Domains() {
           dialogInputObject={dialogInputObject}
           setDialogInputObject={setDialogInputObject}
           inputs={inputs}
-          isDomainDropdown={true}
+          isUserIDDropdown={true}
           handleEdit={editCurrentDomain}
           setSelectedUser={setSelectedUser}
         />

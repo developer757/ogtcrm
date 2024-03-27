@@ -20,8 +20,8 @@ export const DialogComponent = ({
   handleEdit,
   formatCalendarDate,
   formatCalendarTime,
-  isDomainDropdown,
-  setSelectedUser,
+  isUserIDDropdown,
+  setSelectedUser
 }) => {
   const handleDialogInputChange = (field, value) => {
     setDialogInputObject((prevState) => ({
@@ -104,12 +104,12 @@ export const DialogComponent = ({
                     <Dropdown
                       value={dialogInputObject[input.key]}
                       onChange={(e) => {
-                        isDomainDropdown
+                        isUserIDDropdown
                           ? setSelectedUser(e.value)
                           : handleDialogInputChange(input.key, e.target.value);
                       }}
                       options={input.options}
-                      {...(isDomainDropdown ? { optionLabel: "name" } : {})}
+                      {...(isUserIDDropdown ? { optionLabel: "name" } : {})}
                       placeholder={input.placeholder}
                       className="w-full"
                       disabled={isLeadDialogDisabled}
