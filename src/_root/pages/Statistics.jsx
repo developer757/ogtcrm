@@ -31,6 +31,22 @@ function Statistics() {
       currentDate.getDate()
     ); // Установить время на 00:00
 
+    setDates([
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate()
+      ),
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+        23,
+        59,
+        59
+      ),
+    ]);
+
     setStartDate(startToday);
   };
 
@@ -315,7 +331,7 @@ function Statistics() {
         23,
         59,
         59
-      )
+      ),
     ]);
   }
 

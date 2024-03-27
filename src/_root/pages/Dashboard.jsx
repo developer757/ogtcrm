@@ -124,7 +124,7 @@ function Dashboard() {
     <div className="" style={{ maxWidth: "100%", margin: "0 auto" }}>
       <Toast ref={toast} />
       <div>
-        <h2 className="m-0">Статистика</h2>
+        <h2 className="m-0">Дашборд</h2>
       </div>
       <div className="flex flex-wrap gap-4">
         {offers.map((offer) => {
